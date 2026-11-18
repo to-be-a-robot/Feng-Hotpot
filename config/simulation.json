@@ -1,0 +1,32 @@
+{
+  "_status": "PLACEHOLDER — shape to Aolin's demo story. Everything written is flagged is_simulated.",
+  "seed": 42,
+  "first_visit_rate_per_day_at_score_100": 1.2,
+  "min_first_visit_rate_per_day": 0.1,
+  "unscored_creator_score": 50,
+  "post_delay_days": [0, 3],
+  "return_probability": 0.3,
+  "return_delay_days": [3, 20],
+  "party_size_weights": {"2": 4, "3": 2, "4": 3, "5": 1, "6": 2, "8": 1},
+  "dinner_hours_local": [17, 21],
+  "reviews_per_day": 0.6,
+  "review_templates": {
+    "positive": [
+      "The spicy broth was amazing and the staff were so friendly.",
+      "Perfect spot for a group dinner, we will be back.",
+      "Came for a birthday, great hand-pulled noodles and fresh beef rolls.",
+      "Cozy on a cold night, the tomato broth was my favorite."
+    ],
+    "neutral": [
+      "Good food, a bit pricey for a weeknight.",
+      "Solid hotpot, nothing surprising."
+    ],
+    "negative_friday": [
+      "Waited almost an hour on Friday night even with a reservation.",
+      "Friday wait time was really long, food was good once we sat down."
+    ],
+    "negative": [
+      "Service was slow and our broth refill took a while."
+    ]
+  }
+}

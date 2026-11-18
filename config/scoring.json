@@ -1,0 +1,62 @@
+{
+  "_status": "Weights confirmed by Aolin 2026-11-18. Targets and locality values are still placeholders. Feature values are 0–1; score = 100 × weighted average of the known features.",
+  "weights": {
+    "locality": 0.25,
+    "brand_fit": 0.2,
+    "comment_quality": 0.15,
+    "engagement": 0.15,
+    "niche": 0.15,
+    "cadence": 0.1
+  },
+  "recent_posts_for_scoring": 10,
+  "engagement_target_rate": 0.06,
+  "_comment_quality": "Proxy until comment text is collected: comments per like, scaled so conversation_target_ratio = 1.0.",
+  "conversation_target_ratio": 0.05,
+  "cadence_target_posts_per_week": 2,
+  "cadence_window_days": 60,
+  "niche_top_k_posts": 3,
+  "locality": {
+    "home_city": 0.75,
+    "area_city": 0.6,
+    "outside_area": 0.15,
+    "keyword_bonus_max": 0.25
+  },
+  "locality_keywords": {
+    "sunnyvale": [
+      "sunnyvale",
+      "bay area",
+      "south bay",
+      "san jose",
+      "silicon valley",
+      "湾区",
+      "桑尼维尔",
+      "南湾",
+      "硅谷"
+    ],
+    "philadelphia": [
+      "philadelphia",
+      "philly",
+      "费城"
+    ],
+    "rockville": [
+      "rockville",
+      "montgomery county",
+      "dmv",
+      "罗克维尔"
+    ]
+  },
+  "_locality_exclude": "Phrases that look local but aren't (they cancel a keyword match in the same text), e.g. 大湾区 = Guangdong–HK–Macau, not the SF Bay.",
+  "locality_exclude": {
+    "sunnyvale": [
+      "大湾区",
+      "粤港澳",
+      "广东",
+      "深圳",
+      "香港",
+      "san diego",
+      "#tiffanyseatssd"
+    ],
+    "philadelphia": [],
+    "rockville": []
+  }
+}

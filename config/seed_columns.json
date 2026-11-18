@@ -1,0 +1,61 @@
+{
+  "_status": "PLACEHOLDER — map our field names (left) to the headers in Aolin's CSVs (right). Set an optional column to null if the CSV doesn't have it. See PENDING.md.",
+  "creators": {
+    "file": "creators.csv",
+    "columns": {
+      "external_id": "creator_id",
+      "handle": "handle",
+      "display_name": "display_name",
+      "platform": "platform",
+      "profile_url": "profile_url",
+      "city": "city",
+      "followers": "followers",
+      "source": "source",
+      "bio": "bio"
+    }
+  },
+  "creator_posts": {
+    "file": "creator_posts.csv",
+    "columns": {
+      "creator_platform": "platform",
+      "creator_handle": "handle",
+      "url": "url",
+      "caption": "caption",
+      "lang": "lang",
+      "posted_at": "posted_at",
+      "likes": "likes",
+      "comments": "comments",
+      "source": "source"
+    }
+  },
+  "brand_corpus": {
+    "file": "brand_corpus.csv",
+    "columns": {
+      "kind": "kind",
+      "text": "text",
+      "lang": "lang",
+      "source": "source"
+    }
+  },
+  "platform_aliases": {
+    "ig": "instagram",
+    "insta": "instagram",
+    "tt": "tiktok",
+    "xhs": "xiaohongshu",
+    "rednote": "xiaohongshu",
+    "小红书": "xiaohongshu"
+  },
+  "optional_columns": [
+    "bio",
+    "caption",
+    "city",
+    "comments",
+    "display_name",
+    "external_id",
+    "followers",
+    "lang",
+    "likes",
+    "posted_at",
+    "profile_url"
+  ]
+}

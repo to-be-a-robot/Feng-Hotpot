@@ -1,0 +1,8 @@
+{
+  "_status": "PLACEHOLDER — team to agree the per-action minutes. Hours saved is always shown as an estimate.",
+  "minutes_saved": {
+    "research_per_creator": 20,
+    "drafting_per_message": 10,
+    "logging_per_redemption": 1
+  }
+}

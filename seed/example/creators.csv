@@ -1,0 +1,6 @@
+creator_id,handle,display_name,platform,profile_url,city,followers,source,bio
+ex_001,@example_hotpot_hunter,Example Hotpot Hunter,instagram,https://creators.example/instagram/example_hotpot_hunter,Sunnyvale,12.4k,EXAMPLE DATA - fictional - replace with Aolin's seed,
+ex_002,example_bayarea_eats,Example Bay Area Eats,TikTok,https://creators.example/tiktok/example_bayarea_eats,Sunnyvale,"48,000",EXAMPLE DATA - fictional - replace with Aolin's seed,
+ex_003,example_xhs_foodie,示例吃货,xhs,,Sunnyvale,8500,EXAMPLE DATA - fictional - replace with Aolin's seed,
+ex_004,example_philly_bites,Example Philly Bites,instagram,https://creators.example/instagram/example_philly_bites,Philadelphia,21000,EXAMPLE DATA - fictional - replace with Aolin's seed,
+ex_005,example_rockville_table,Example Rockville Table,tiktok,https://creators.example/tiktok/example_rockville_table,Rockville,6300,EXAMPLE DATA - fictional - replace with Aolin's seed,

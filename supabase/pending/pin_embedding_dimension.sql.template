@@ -1,0 +1,14 @@
+-- NOT A MIGRATION YET. Once the embedding model is agreed:
+--   1. Replace __DIM__ with the model's dimension (e.g. 1024 for voyage-3.5).
+--   2. Save as supabase/migrations/<timestamp>_pin_embedding_dimension.sql.
+--   3. Re-run `python -m feng_workers.embed --all` if the model changed.
+-- Rows embedded with a different model are cleared first so the cast succeeds.
+
+update creator_posts set embedding = null where embedding is not null and vector_dims(embedding) <> __DIM__;
+update brand_corpus  set embedding = null where embedding is not null and vector_dims(embedding) <> __DIM__;
+
+alter table creator_posts alter column embedding type vector(__DIM__);
+alter table brand_corpus  alter column embedding type vector(__DIM__);
+
+create index creator_posts_embedding_idx on creator_posts using hnsw (embedding vector_cosine_ops);
+create index brand_corpus_embedding_idx  on brand_corpus  using hnsw (embedding vector_cosine_ops);
