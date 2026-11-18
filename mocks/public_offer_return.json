@@ -1,0 +1,12 @@
+{
+  "status": "active",
+  "offer": {
+    "title": { "en": "Welcome back: free dessert", "zh": "欢迎回来：免费甜点" },
+    "details": { "en": "One use · Dine-in", "zh": "限用一次 · 仅限堂食" },
+    "kind": "return",
+    "starts": "2026-11-27",
+    "ends": "2026-12-27"
+  },
+  "restaurant": { "name": "Feng Hotpot", "location_name": "Sunnyvale", "address": "[Restaurant address]" },
+  "recommended_by": null
+}

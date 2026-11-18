@@ -1,0 +1,79 @@
+{
+  "id": "cmp_1",
+  "name": "First cold week · Sunnyvale",
+  "occasion": { "id": "occ_cold_week", "name": "First cold week" },
+  "location": "sunnyvale",
+  "start_date": "2026-11-20",
+  "end_date": "2026-12-04",
+  "status": "active",
+  "offer": { "title": "Free appetizer for your table", "value_cents": 4500 },
+  "generation": { "status": "running", "total": 10, "done": 8, "failed": 1 },
+  "totals": { "first_visits": 12, "return_visits": 3, "cost_cents": 22500, "includes_simulated": true },
+  "creators": [
+    {
+      "campaign_creator_id": "cc_1",
+      "version": 3,
+      "creator": { "id": "c_1", "handle": "@bayareabites", "platform": "instagram", "profile_url": "https://creators.example/instagram/bayareabites" },
+      "code": { "value": "FENG-COLD-K7M2", "url": "https://creator-loop.example/r/FENG-COLD-K7M2", "expires_at": "2026-12-05T07:59:59Z" },
+      "outreach_summary": { "draft": 0, "approved": 1, "sent": 0, "replied": 1, "declined": 0, "rejected": 0 },
+      "post_url": "https://creators.example/instagram/bayareabites/p/9",
+      "post_date": "2026-11-22",
+      "cost_cents": 4500,
+      "first_visits": 5,
+      "return_visits": 2,
+      "is_simulated": false
+    },
+    {
+      "campaign_creator_id": "cc_2",
+      "version": 2,
+      "creator": { "id": "c_2", "handle": "@southbayfood", "platform": "tiktok", "profile_url": "https://creators.example/tiktok/southbayfood" },
+      "code": { "value": "FENG-COLD-9QXA", "url": "https://creator-loop.example/r/FENG-COLD-9QXA", "expires_at": "2026-12-05T07:59:59Z" },
+      "outreach_summary": { "draft": 0, "approved": 0, "sent": 0, "replied": 1, "declined": 0, "rejected": 1 },
+      "post_url": "https://creators.example/tiktok/southbayfood/v/9",
+      "post_date": "2026-11-23",
+      "cost_cents": 4500,
+      "first_visits": 4,
+      "return_visits": 1,
+      "is_simulated": true
+    },
+    {
+      "campaign_creator_id": "cc_3",
+      "version": 1,
+      "creator": { "id": "c_3", "handle": "@xiaochi.sv", "platform": "xiaohongshu", "profile_url": "https://creators.example/xiaohongshu/xiaochi.sv" },
+      "code": { "value": "FENG-COLD-4TWE", "url": "https://creator-loop.example/r/FENG-COLD-4TWE", "expires_at": "2026-12-05T07:59:59Z" },
+      "outreach_summary": { "draft": 1, "approved": 0, "sent": 1, "replied": 0, "declined": 0, "rejected": 0 },
+      "post_url": null,
+      "post_date": null,
+      "cost_cents": 4500,
+      "first_visits": 0,
+      "return_visits": 0,
+      "is_simulated": false
+    },
+    {
+      "campaign_creator_id": "cc_4",
+      "version": 2,
+      "creator": { "id": "c_5", "handle": "@foodiesv", "platform": "tiktok", "profile_url": "https://creators.example/tiktok/foodiesv" },
+      "code": { "value": "FENG-COLD-8HJN", "url": "https://creator-loop.example/r/FENG-COLD-8HJN", "expires_at": "2026-12-05T07:59:59Z" },
+      "outreach_summary": { "draft": 1, "approved": 0, "sent": 0, "replied": 1, "declined": 0, "rejected": 0 },
+      "post_url": "https://creators.example/tiktok/foodiesv/v/9",
+      "post_date": "2026-11-24",
+      "cost_cents": 4500,
+      "first_visits": 3,
+      "return_visits": 0,
+      "is_simulated": true
+    },
+    {
+      "campaign_creator_id": "cc_5",
+      "version": 1,
+      "creator": { "id": "c_7", "handle": "@小吃日记", "platform": "xiaohongshu", "profile_url": null },
+      "code": { "value": "FENG-COLD-2MPZ", "url": "https://creator-loop.example/r/FENG-COLD-2MPZ", "expires_at": "2026-12-05T07:59:59Z" },
+      "outreach_summary": { "draft": 1, "approved": 0, "sent": 0, "replied": 0, "declined": 1, "rejected": 0 },
+      "post_url": null,
+      "post_date": null,
+      "cost_cents": 4500,
+      "first_visits": 0,
+      "return_visits": 0,
+      "is_simulated": false
+    }
+  ]
+}

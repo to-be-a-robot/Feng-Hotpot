@@ -1,0 +1,57 @@
+{
+  "UNAUTHENTICATED": {
+    "http": 401,
+    "body": { "error": { "code": "UNAUTHENTICATED", "message": "Please sign in again.", "request_id": "req_e01" } }
+  },
+  "FORBIDDEN": {
+    "http": 403,
+    "body": { "error": { "code": "FORBIDDEN", "message": "You don't have access to this.", "request_id": "req_e02" } }
+  },
+  "NOT_FOUND": {
+    "http": 404,
+    "body": { "error": { "code": "NOT_FOUND", "message": "We couldn't find that.", "request_id": "req_e03" } }
+  },
+  "STALE_VERSION": {
+    "http": 409,
+    "body": {
+      "error": {
+        "code": "STALE_VERSION",
+        "message": "Someone else changed this draft.",
+        "request_id": "req_e04",
+        "current": {
+          "id": "o_5", "version": 6, "campaign_id": "cmp_1", "campaign_creator_id": "cc_3",
+          "creator": { "id": "c_3", "handle": "@xiaochi.sv", "platform": "xiaohongshu", "profile_url": "https://creators.example/xiaohongshu/xiaochi.sv", "followers": 9100 },
+          "platform": "xiaohongshu", "lang": "en",
+          "draft_text": "Hi! We'd love to host you at Feng Hotpot Sunnyvale. Your offer: https://creator-loop.example/r/FENG-COLD-4TWE",
+          "edited_text": "Hi! We'd love to host you and a friend at Feng Hotpot Sunnyvale this month. Your offer: https://creator-loop.example/r/FENG-COLD-4TWE",
+          "current_text": "Hi! We'd love to host you and a friend at Feng Hotpot Sunnyvale this month. Your offer: https://creator-loop.example/r/FENG-COLD-4TWE",
+          "status": "draft", "has_offer_link": true,
+          "referenced_posts": [],
+          "generation_status": "ready", "reject_reason": null,
+          "approver": null, "decided_at": null, "sent_at": null, "replied_at": null,
+          "updated_at": "2026-11-18T02:30:00Z", "is_simulated": false
+        }
+      }
+    }
+  },
+  "INVALID_TRANSITION": {
+    "http": 409,
+    "body": { "error": { "code": "INVALID_TRANSITION", "message": "That action isn't available for this message's status.", "request_id": "req_e05" } }
+  },
+  "DUPLICATE": {
+    "http": 409,
+    "body": { "error": { "code": "DUPLICATE", "message": "This creator is already in the campaign.", "request_id": "req_e06" } }
+  },
+  "VALIDATION_FAILED": {
+    "http": 422,
+    "body": { "error": { "code": "VALIDATION_FAILED", "message": "Check the highlighted fields.", "fields": { "post_url": "Use a link that starts with https://", "post_date": "Can't be more than 1 day in the future" }, "request_id": "req_e07" } }
+  },
+  "RATE_LIMITED": {
+    "http": 429,
+    "body": { "error": { "code": "RATE_LIMITED", "message": "Too many requests.", "retry_after": 30, "request_id": "req_e08" } }
+  },
+  "INTERNAL": {
+    "http": 500,
+    "body": { "error": { "code": "INTERNAL", "message": "Something went wrong on our side.", "request_id": "req_e09" } }
+  }
+}

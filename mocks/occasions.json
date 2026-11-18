@@ -1,0 +1,40 @@
+{
+  "items": [
+    {
+      "id": "occ_birthday",
+      "name": "Birthdays",
+      "offer_title": { "en": "Free birthday dessert", "zh": "生日免费甜点" },
+      "offer_details": { "en": "For the birthday guest, dine-in only", "zh": "生日寿星专享，仅限堂食" },
+      "default_cost_cents": 1200
+    },
+    {
+      "id": "occ_group_night",
+      "name": "Group nights",
+      "offer_title": { "en": "10% off tables of 6 or more", "zh": "六人及以上八折" },
+      "offer_details": { "en": "One use per table, dine-in only", "zh": "每桌限用一次，仅限堂食" },
+      "default_cost_cents": 3000
+    },
+    {
+      "id": "occ_cold_week",
+      "name": "First cold week",
+      "offer_title": { "en": "Free appetizer for your table", "zh": "桌上免费开胃菜" },
+      "offer_details": { "en": "One per table · Dine-in", "zh": "每桌限一份 · 仅限堂食" },
+      "default_cost_cents": 4500
+    },
+    {
+      "id": "occ_finals_end",
+      "name": "Finals ending",
+      "offer_title": { "en": "Free drink for each guest", "zh": "每位客人免费饮品" },
+      "offer_details": { "en": "Show a student ID, dine-in only", "zh": "凭学生证，仅限堂食" },
+      "default_cost_cents": 3500
+    },
+    {
+      "id": "occ_payday",
+      "name": "Payday",
+      "offer_title": { "en": "Free side dish with any broth", "zh": "任意锅底赠小菜一份" },
+      "offer_details": { "en": "One per table, dine-in only", "zh": "每桌限一份，仅限堂食" },
+      "default_cost_cents": 1500
+    }
+  ],
+  "next_cursor": null
+}

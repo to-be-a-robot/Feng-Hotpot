@@ -1,0 +1,43 @@
+{
+  "id": "b_1",
+  "week_of": "2026-11-30",
+  "location": "sunnyvale",
+  "generated_at": "2026-12-05T17:02:00Z",
+  "data_through": "2026-12-04",
+  "metrics": {
+    "first_visits": 12,
+    "return_visits": 3,
+    "repeat_visit_rate": 0.25,
+    "cost_per_first_visit_cents": 1875,
+    "response_rate": 0.8,
+    "sent_count": 5,
+    "response_count": 4,
+    "hours_saved_estimate": 3.5,
+    "simulated_share": 0.53
+  },
+  "top_creators": [
+    { "creator_id": "c_1", "handle": "@bayareabites", "visits": 7, "cost_cents": 4500, "campaign_id": "cmp_1" },
+    { "creator_id": "c_2", "handle": "@southbayfood", "visits": 5, "cost_cents": 4500, "campaign_id": "cmp_1" },
+    { "creator_id": "c_5", "handle": "@foodiesv", "visits": 3, "cost_cents": 4500, "campaign_id": "cmp_1" }
+  ],
+  "review_summary": {
+    "positive_share": 0.68,
+    "is_simulated": true,
+    "themes": [ { "label": "Friday wait time", "count": 4 } ]
+  },
+  "content": {
+    "headline": "Two creators drove 80% of visits for the same $45 each.",
+    "highlights": [
+      "3 of 12 first-time guests have come back so far.",
+      "Friday wait time came up in 4 reviews."
+    ],
+    "review_signals": [
+      "68% of reviews were positive; the main complaint was Friday wait time."
+    ],
+    "actions": [
+      { "title": "Rebook @bayareabites", "detail": "Drove 7 visits at $45. Offer a second tasting.", "creator_id": "c_1" },
+      { "title": "Add Friday staffing", "detail": "4 reviews mention a long wait on Friday evenings.", "creator_id": null },
+      { "title": "Follow up with @xiaochi.sv", "detail": "No reply yet to the message sent Nov 18.", "creator_id": "c_3" }
+    ]
+  }
+}

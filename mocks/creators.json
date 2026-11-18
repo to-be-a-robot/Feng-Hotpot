@@ -1,0 +1,137 @@
+{
+  "total": 8,
+  "next_cursor": null,
+  "items": [
+    {
+      "id": "c_1",
+      "handle": "@bayareabites",
+      "platform": "instagram",
+      "profile_url": "https://creators.example/instagram/bayareabites",
+      "city": "Sunnyvale",
+      "followers": 18400,
+      "score": 87,
+      "score_reason": "Posts group-dinner content; most followers are in the Bay Area",
+      "score_breakdown": { "locality": 0.90, "niche": 0.85, "engagement": 0.80, "comment_quality": 0.75, "cadence": 0.90, "brand_fit": 0.90 },
+      "scored_at": "2026-11-17T20:00:00Z",
+      "recent_posts": [
+        { "id": "p_1", "url": "https://creators.example/instagram/bayareabites/p/1", "excerpt": "Hot pot night with the crew", "posted_at": "2026-11-03T02:10:00Z" },
+        { "id": "p_2", "url": "https://creators.example/instagram/bayareabites/p/2", "excerpt": "Cold-weather eats under $20", "posted_at": "2026-10-28T19:30:00Z" }
+      ],
+      "active_campaigns": [ { "id": "cmp_1", "name": "First cold week · Sunnyvale" } ],
+      "source": "hand-collected 2026-11-16"
+    },
+    {
+      "id": "c_2",
+      "handle": "@southbayfood",
+      "platform": "tiktok",
+      "profile_url": "https://creators.example/tiktok/southbayfood",
+      "city": "Sunnyvale",
+      "followers": 52000,
+      "score": 79,
+      "score_reason": "Strong local audience; posts several times a week",
+      "score_breakdown": { "locality": 0.85, "niche": 0.80, "engagement": 0.75, "comment_quality": 0.70, "cadence": 0.85, "brand_fit": 0.80 },
+      "scored_at": "2026-11-17T20:00:00Z",
+      "recent_posts": [
+        { "id": "p_3", "url": "https://creators.example/tiktok/southbayfood/v/1", "excerpt": "Friday night noodle crawl", "posted_at": "2026-11-14T03:00:00Z" }
+      ],
+      "active_campaigns": [ { "id": "cmp_1", "name": "First cold week · Sunnyvale" } ],
+      "source": "hand-collected 2026-11-16"
+    },
+    {
+      "id": "c_3",
+      "handle": "@xiaochi.sv",
+      "platform": "xiaohongshu",
+      "profile_url": "https://creators.example/xiaohongshu/xiaochi.sv",
+      "city": "Sunnyvale",
+      "followers": 9100,
+      "score": null,
+      "score_reason": null,
+      "score_breakdown": null,
+      "scored_at": null,
+      "recent_posts": [],
+      "active_campaigns": [ { "id": "cmp_1", "name": "First cold week · Sunnyvale" } ],
+      "source": "hand-collected 2026-11-16"
+    },
+    {
+      "id": "c_4",
+      "handle": "@finalsweekeats",
+      "platform": "instagram",
+      "profile_url": "https://creators.example/instagram/finalsweekeats",
+      "city": "Sunnyvale",
+      "followers": 31000,
+      "score": 72,
+      "score_reason": "Student audience near campus; engaged comments",
+      "score_breakdown": { "locality": 0.80, "niche": 0.70, "engagement": 0.75, "comment_quality": 0.65, "cadence": 0.70, "brand_fit": 0.70 },
+      "scored_at": "2026-11-17T20:00:00Z",
+      "recent_posts": [
+        { "id": "p_4", "url": "https://creators.example/instagram/finalsweekeats/p/1", "excerpt": "Study snacks that actually help", "posted_at": "2026-11-10T18:00:00Z" }
+      ],
+      "active_campaigns": [ { "id": "cmp_2", "name": "Finals week · Sunnyvale" } ],
+      "source": "hand-collected 2026-11-16"
+    },
+    {
+      "id": "c_5",
+      "handle": "@foodiesv",
+      "platform": "tiktok",
+      "profile_url": "https://creators.example/tiktok/foodiesv",
+      "city": "Sunnyvale",
+      "followers": 14200,
+      "score": 68,
+      "score_reason": "Local food reviews; moderate engagement",
+      "score_breakdown": { "locality": 0.75, "niche": 0.70, "engagement": 0.60, "comment_quality": 0.65, "cadence": 0.60, "brand_fit": 0.70 },
+      "scored_at": "2026-11-17T20:00:00Z",
+      "recent_posts": [
+        { "id": "p_5", "url": "https://creators.example/tiktok/foodiesv/v/1", "excerpt": "Ranking every ramen spot <b>in Sunnyvale</b> <script>alert(1)</script>", "posted_at": "2026-11-08T01:20:00Z" }
+      ],
+      "active_campaigns": [ { "id": "cmp_1", "name": "First cold week · Sunnyvale" } ],
+      "source": "hand-collected 2026-11-16"
+    },
+    {
+      "id": "c_6",
+      "handle": "@the_absolutely_longest_handle_name_for_layout_testing_00001",
+      "platform": "instagram",
+      "profile_url": "https://creators.example/instagram/the_absolutely_longest_handle_name_for_layout_testing_00001",
+      "city": "Sunnyvale",
+      "followers": 1200000,
+      "score": 55,
+      "score_reason": "Very large audience but only partly local",
+      "score_breakdown": { "locality": 0.30, "niche": 0.60, "engagement": 0.40, "comment_quality": null, "cadence": null, "brand_fit": 0.65 },
+      "scored_at": "2026-11-17T20:00:00Z",
+      "recent_posts": [],
+      "active_campaigns": [],
+      "source": "hand-collected 2026-11-16"
+    },
+    {
+      "id": "c_7",
+      "handle": "@小吃日记",
+      "platform": "xiaohongshu",
+      "profile_url": null,
+      "city": "Sunnyvale",
+      "followers": 6400,
+      "score": 81,
+      "score_reason": "Chinese-language food posts; strong local following",
+      "score_breakdown": { "locality": 0.90, "niche": 0.85, "engagement": 0.70, "comment_quality": 0.75, "cadence": 0.80, "brand_fit": 0.85 },
+      "scored_at": "2026-11-17T20:00:00Z",
+      "recent_posts": [
+        { "id": "p_6", "url": "https://creators.example/xiaohongshu/xiaochiriji/n/1", "excerpt": "桑尼维尔火锅探店", "posted_at": "2026-11-12T04:00:00Z" }
+      ],
+      "active_campaigns": [ { "id": "cmp_1", "name": "First cold week · Sunnyvale" } ],
+      "source": "hand-collected 2026-11-16"
+    },
+    {
+      "id": "c_8",
+      "handle": "@brandnewfoodie",
+      "platform": "instagram",
+      "profile_url": "https://creators.example/instagram/brandnewfoodie",
+      "city": "Sunnyvale",
+      "followers": 120,
+      "score": 12,
+      "score_reason": "Too few posts and followers to judge",
+      "score_breakdown": { "locality": 0.20, "niche": 0.30, "engagement": 0.10, "comment_quality": 0.10, "cadence": 0.05, "brand_fit": 0.20 },
+      "scored_at": "2026-11-17T20:00:00Z",
+      "recent_posts": [],
+      "active_campaigns": [],
+      "source": "hand-collected 2026-11-16"
+    }
+  ]
+}

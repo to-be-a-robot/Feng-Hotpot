@@ -1,0 +1,13 @@
+{
+  "redemption": {
+    "id": "r_2",
+    "type": "return",
+    "visit_number": 2,
+    "redeemed_at": "2026-11-28T02:20:00Z",
+    "location": "sunnyvale",
+    "party_size": 4,
+    "creator_handle": "@bayareabites",
+    "offer_title": "Welcome back: free dessert"
+  },
+  "return_offer": null
+}
