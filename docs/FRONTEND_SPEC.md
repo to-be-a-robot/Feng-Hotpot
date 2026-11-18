@@ -159,17 +159,21 @@ Rules:
 - Any other combination returns `409 INVALID_TRANSITION`. The UI only shows allowed actions, so this happens only with stale screens.
 - Every write carries the item's `version`. A mismatch returns `409 STALE_VERSION` with the current item.
 - `mark_sent` is irreversible, so the UI confirms it first.
+- `mark_sent`, `mark_replied` and `mark_declined` are manual tracking only. The app never sends a message or contacts a platform; the manager records what they did outside the app.
+- `mark_declined` also sets `replied_at` if it is empty, because a decline is a response.
 
 ### 3.3 Code lifecycle
 
 | Kind | Created | Uses | Valid | Ends |
 |---|---|---|---|---|
 | `creator` | When the campaign is created | Many (each use is one diner's first visit) | Campaign dates at the campaign's location | Expires at end of local end date |
-| `return` | When a first visit is redeemed | Exactly 1 | 30 days (configurable), same location | Used, expired or voided |
+| `return` | When a first visit is redeemed: one per redemption, whatever the party size | Exactly 1 | From the next local day for 30 days (`return_valid_days`, configurable), same location | Used, expired or voided |
 
 Derived values:
 - `type` of a redemption = `first` (creator code) or `return` (return code).
 - `visit_number` = 1 for first, 2 for return. Visit 3+ is out of scope (return codes don't issue new return codes).
+- A return code expires at 23:59:59 local time on its last day. It does not end with the campaign.
+- Voiding a **first visit** cancels its unused return code (it stays unusable and returns `CODE_VOIDED`), and is blocked if the return code was already used. Voiding a **return visit**, for example when staff used the wrong code, makes that return code usable again if it has not expired.
 - A repeat visit is attributed to the creator of its parent first-visit redemption.
 
 ---
@@ -322,9 +326,9 @@ Edge cases:
 +----------------------------------------------------------------------------------+
 | (6) ▾ @xiaochi.sv · Xiaohongshu · 9.1k · [Open profile ↗]                        |
 |  +----------------------------------------------------------------------------+  |
-|  | EN  [Draft]                                              (7) 109 / 1000    |  |
+|  | EN  [Draft]                                              (7) 111 / 1000    |  |
 |  | Hi! We'd love to host you at Feng Hotpot Sunnyvale. Your offer:            |  |
-|  | [site]/r/FENG-COLD-4TWE                                                    |  |
+|  | [site]/r/FENG-COLD-4TWE6V                                                  |  |
 |  | No recent posts to reference  ·  (8) Offer link included ✓                 |  |
 |  | (9) [Edit]  [Approve]  [Reject]                                            |  |
 |  +----------------------------------------------------------------------------+  |
@@ -401,9 +405,9 @@ Detail:
 | (2) First visits 12 | Return visits 3 | Repeat rate 25% | Cost / first visit $18.75 |
 +----------------------------------------------------------------------------------+
 | Creator       | Code (3)       | QR | Outreach | Post link (4)     | Post date | First | Return | Cost |
-| @bayareabites | FENG-COLD-K7M2 [copy] | [⬇] | Replied | creators.example/instagram/… [✎] | Nov 22 | 5 | 2 | $45 |
-| @southbayfood | FENG-COLD-9QXA [copy] | [⬇] | Replied | creators.example/tiktok/… [✎] | Nov 23 | 4 | 1 | $45 |
-| @xiaochi.sv   | FENG-COLD-4TWE [copy] | [⬇] | Sent    | [+ Add post link]  | —      | 0 | 0 | $45 |
+| @bayareabites | FENG-COLD-K7M2QD [copy] | [⬇] | Replied | creators.example/instagram/… [✎] | Nov 22 | 5 | 2 | $45 |
+| @southbayfood | FENG-COLD-9QXA4R [copy] | [⬇] | Replied | creators.example/tiktok/… [✎] | Nov 23 | 4 | 1 | $45 |
+| @xiaochi.sv   | FENG-COLD-4TWE6V [copy] | [⬇] | Sent    | [+ Add post link]  | —    | 0 | 0 | $45 |
 +----------------------------------------------------------------------------------+
 | (5) Row actions: Go to messages · Edit cost                                       |
 +----------------------------------------------------------------------------------+
@@ -459,7 +463,7 @@ OFFER                               SHOW TO STAFF (full screen)
 | FENG HOTPOT   [EN | 中文]|        | ← Back                   |
 | Sunnyvale                |        |  Show this to staff      |
 |                          |        |                          |
-| Free appetizer for       |        |  FENG-COLD-K7M2          |
+| Free appetizer for       |        |  FENG-COLD-K7M2QD        |
 | your table               |        |  (large, grouped)        |
 | Recommended by           |        |  [QR]                    |
 | @bayareabites            |        |  Valid at Sunnyvale      |
@@ -512,7 +516,7 @@ REDEEM                       RESULT (first visit)           RESULT (return visit
 - **Redeem** disables while sending and sends an `idempotency_key`. A retry after a dropped connection can't create a second redemption.
 - If the network fails after tapping, show "We couldn't confirm this went through." and point to **Recent**; do not claim success or failure.
 - The **return offer** screen stays until dismissed. **Recent** entries for first visits have **Show return offer again**.
-- **Void** (P1): staff can void a redemption made in the last 15 minutes with a confirm step. A first-visit redemption can't be voided once its return code was used.
+- **Void** (P1): staff can void a redemption made in the last 15 minutes with a confirm step. A first-visit redemption can't be voided once its return code was used. Voiding a return visit makes its return code usable again if it has not expired. If staff void a first visit because of a typo, they redeem the creator code again; that issues a new return code and the old one stops working.
 - Shared device: sign out automatically after 15 minutes of inactivity; no codes stored in browser storage.
 
 | API error code | Message to staff |
@@ -644,7 +648,7 @@ Response `201`:
   "creators": [ {
       "campaign_creator_id": "cc_1", "version": 3,
       "creator": { "id": "c_1", "handle": "@bayareabites", "platform": "instagram", "profile_url": "https://…" },
-      "code": { "value": "FENG-COLD-K7M2", "url": "https://creator-loop.example/r/FENG-COLD-K7M2", "expires_at": "2026-12-05T07:59:59Z" },
+      "code": { "value": "FENG-COLD-K7M2QD", "url": "https://creator-loop.example/r/FENG-COLD-K7M2QD", "expires_at": "2026-12-05T07:59:59Z" },
       "outreach_summary": { "draft": 0, "approved": 1, "sent": 0, "replied": 1, "declined": 0, "rejected": 0 },
       "post_url": "https://creators.example/instagram/bayareabites/p/9", "post_date": "2026-11-22",
       "cost_cents": 4500, "first_visits": 5, "return_visits": 2, "is_simulated": false } ]
@@ -661,9 +665,9 @@ Response `201`:
   "creator": { "id": "c_3", "handle": "@xiaochi.sv", "platform": "xiaohongshu",
                "profile_url": "https://creators.example/xiaohongshu/xiaochi.sv", "followers": 9100 },
   "platform": "xiaohongshu", "lang": "en",
-  "draft_text": "Hi! We'd love to host you at Feng Hotpot Sunnyvale. Your offer: https://creator-loop.example/r/FENG-COLD-4TWE",
+  "draft_text": "Hi! We'd love to host you at Feng Hotpot Sunnyvale. Your offer: https://creator-loop.example/r/FENG-COLD-4TWE6V",
   "edited_text": null,
-  "current_text": "Hi! We'd love to host you at Feng Hotpot Sunnyvale. Your offer: https://creator-loop.example/r/FENG-COLD-4TWE",
+  "current_text": "Hi! We'd love to host you at Feng Hotpot Sunnyvale. Your offer: https://creator-loop.example/r/FENG-COLD-4TWE6V",
   "status": "draft",
   "has_offer_link": true,
   "referenced_posts": [],
@@ -697,7 +701,7 @@ Returns the updated item. Server enforces: transition table (§3.2); text 1–20
 
 **`POST /redemptions`**
 ```json
-{ "code": "FENG-COLD-K7M2", "location": "sunnyvale", "party_size": 2, "idempotency_key": "9a1b…" }
+{ "code": "FENG-COLD-K7M2QD", "location": "sunnyvale", "party_size": 2, "idempotency_key": "9a1b…" }
 ```
 Response `201`:
 ```json
@@ -736,7 +740,7 @@ For a return code, `type` is `return`, `visit_number` is 2, and `return_offer` i
 - `GET /summary?location=` → `{ "location", "drafts_waiting", "approved_unsent", "active_campaigns", "redemptions_today" }`
 - `GET /redemptions/recent` → `{ "location", "items": [ { "id", "code", "type", "party_size", "redeemed_at", "voided_at", "voided_reason", "can_void_until", "has_return_offer" } ] }`
 - `GET /redemptions/:id` → same shape as the `POST /redemptions` response, so a first visit's return offer can be shown again.
-- `POST /redemptions/:id/void` with `{ "reason": "Wrong party size" }` → the updated recent-redemption item. Allowed for 15 minutes; `409 INVALID_TRANSITION` if the return code was already used.
+- `POST /redemptions/:id/void` with `{ "reason": "Wrong party size" }` → the updated recent-redemption item. Allowed for 15 minutes; `409 INVALID_TRANSITION` if the return code was already used. Voiding a return visit restores that return code if it has not expired.
 - `POST /simulate` with `{ "campaign_id": "cmp_1", "days": 14 }` → `{ "campaign_id", "days", "added": {redemptions, reviews}, "brief": {status} }`. Repeating it does not add duplicate rows.
 - `POST /outreach/:id/regenerate` with `{ "version": 3 }` → the updated outreach item, with `generation_status` back to `pending`. Rewriting replaces the AI draft and clears `edited_text`, so the UI confirms first.
 - `POST /briefs/generate` with `{ "location": "sunnyvale" }` → `202` with `{ "status": "generating" }`.
@@ -794,7 +798,8 @@ Notes:
 - Add `is_simulated boolean not null default false` to every table that simulation writes to. Aggregates must be computed with and without simulated rows so the UI can label them.
 - **Code format:** readable prefix + random part from an alphabet without look-alikes, e.g. `FENG-COLD-` + 6 random characters; return codes `BACK-` + 8. Compare case-insensitively after stripping spaces and hyphens. The plan's example (`FENG-COLD-AMY7`) is too guessable; don't derive codes from creator names.
 - Single-use enforcement: update `uses` with a conditional atomic update (`... where uses < max_uses`), or a unique constraint on `parent_redemption_id`.
-- Voiding a first-visit redemption voids its unused return code; it is blocked if the return code was already used.
+- Voiding a first-visit redemption voids its unused return code; it is blocked if the return code was already used. Voiding a return-visit redemption sets that code's `uses` back to 0 if it has not expired.
+- Occasions live in the `occasions` table, seeded with the plan's five. Copy the occasion's offer into `offer_codes.offer` when a campaign is created, so editing an occasion later does not change live offers. Add `is_active` to hide old occasions instead of deleting them.
 - Audit events: `campaign.create`, `outreach.approve`, `outreach.reject`, `outreach.mark_sent`, `outreach.mark_replied`, `redemption.create`, `redemption.void`, `simulate.run`, `brief.generate`.
 - AI draft generation: treat creator captions as **untrusted data** (they could contain instructions). Wrap them in clear delimiters, validate structured output, only allow referenced post ids that exist for that creator, strip any URL except the offer link, and keep numbers/claims out of drafts that aren't in the offer. Drafts should state the offer plainly and not pressure for positive coverage; remind creators to disclose per platform rules (confirm wording with Aolin/Sherry).
 

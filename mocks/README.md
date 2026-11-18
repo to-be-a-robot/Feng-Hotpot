@@ -15,6 +15,7 @@ The files describe one consistent campaign so they can be compared with each oth
 - **Results to date (through Dec 4):** 12 first visits and 3 return visits, $225 total cost, so $18.75 per first visit and a 25% repeat rate.
 - **Outreach:** 10 messages: 3 replied, 1 approved, 1 sent, 1 declined, 1 rejected, 3 drafts (one ready, one failed, one still being written).
 - **Staff examples** happen on Fri Nov 27 at about 6 PM Sunnyvale time. The brief is for the week of Nov 30, with data through Dec 4.
+- **Codes:** creator codes are `FENG-COLD-` plus 6 random characters. Return codes are `BACK-` plus 8, shown as two groups of 4. A return offer starts the next local day and lasts 30 days.
 - `creators.json` shows the creators **after** `cmp_1` was created, so `active_campaigns` is filled in. The Creators and Add-to-campaign wireframes show the moment **before** it was created.
 
 If you change a number in one file, check the others. The checks that were run on these files are listed at the bottom.
