@@ -31,12 +31,12 @@ The team plan is kept as the base. These changes close logic gaps found while tu
 
 | ID | Question | Owner | Default assumed in this spec |
 |---|---|---|---|
-| D1 | How do managers sign in? | Tyler + Shinjini | Email magic link (Supabase Auth) with an allowlist in `profiles` |
+| D1 | How do managers sign in? | Tyler + Shinjini | Email magic link (Supabase Auth). The `profiles` table holds role and locations. Open sign-ups off; 2–3 password demo accounts as a backup (the built-in email sender has a low hourly limit) |
 | D2 | Return-offer design: personal return code (no data) or capture phone/email (needs consent)? | Aolin | Return code, no personal data |
 | D3 | What is the return offer, and for how long is it valid? | Aolin / Sherry Gu | "Welcome back" dessert, 30 days, same location |
 | D4 | How is `cost` defined (meal value, creator fee, both)? | Aolin | Meal value per creator, entered in cents, editable |
 | D5 | Are codes valid at one location or several? | Aolin | One location per campaign |
-| D6 | Which stack builds the frontend (Enter generates React + Vite, not Next.js)? | Tyler + team | Contract below is stack-neutral JSON over HTTPS |
+| D6 | Who serves the HTTP API, and what builds the frontend? | Tyler, Shinjini, Aolin | Shinjini's Python FastAPI service serves the section 5 endpoints at a public HTTPS URL. The frontend (React + Vite, built in Enter) calls it through one file with a mock switch. Needs Aolin's OK, because the team plan gave the redemption route to Tyler |
 | D7 | How do judges access the demo? | Tyler + Aolin | A read-mostly demo account plus a "Reset demo" tool |
 | D8 | Maximum creators per campaign (bounds AI cost) | Shinjini | 25 |
 
@@ -534,7 +534,7 @@ REDEEM                       RESULT (first visit)           RESULT (return visit
 
 ## 5. API contract (for Shinjini)
 
-Transport is open (D6): endpoints below can be Supabase Edge Functions, RPC, or a small service. Whatever the choice, the browser only ever holds the **publishable key and the user's session token**.
+Proposed (D6): a Python FastAPI service serves these endpoints at a public HTTPS URL, and the frontend calls it through one file (`src/lib/api.ts`) with a mock switch. Whatever the transport, the browser only ever holds the **publishable key and the user's session token**.
 
 ### 5.1 Conventions
 
@@ -771,6 +771,12 @@ Brief numbers are totals to date for the campaigns active that week, not weekly 
 | Campaign name | 3–80 chars |
 | Party size | 1–50 |
 | URLs | https only, ≤ 2048 chars |
+
+### 5.6 Configuration
+
+Frontend (environment variables, public by design): `VITE_API_BASE_URL` (must be https), `VITE_USE_MOCKS` (`true` serves `mocks/` from memory), `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`.
+
+Backend: `PUBLIC_SITE_URL` (used to build `/r/:code` links and QR codes) and `ALLOWED_ORIGINS` (CORS allowlist: the Enter preview URL, the published URL, and `http://localhost:5173` for local development). Store a placeholder in draft text and build the offer link from `PUBLIC_SITE_URL` when a draft is returned, so a URL change does not break existing drafts. Add the frontend URLs to Supabase's Auth redirect list. Enter's changelog (Sep 30, 2026) says its default publish domain is now `.enter.pro`, replacing `.enterapp.pro`; the real address is known after the first publish.
 
 ---
 
