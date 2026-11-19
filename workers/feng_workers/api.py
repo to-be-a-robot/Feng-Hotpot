@@ -249,7 +249,9 @@ def create_app(database_url: str | None = None, auth_mode: str | None = None) ->
     app = FastAPI(title="Feng Hotpot Creator Loop API", version="0.1.0")
     app.state.pool, app.state.limiter = pool, limiter
     origins = [o.strip() for o in (env("CORS_ORIGINS", "http://localhost:5173,http://localhost:3000") or "").split(",") if o.strip()]
-    app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=False,
+    # CORS_ORIGIN_REGEX (optional) matches changing preview URLs, e.g. https://.*\.enter\.pro
+    app.add_middleware(CORSMiddleware, allow_origins=origins, allow_origin_regex=env("CORS_ORIGIN_REGEX") or None,
+                       allow_credentials=False,
                        allow_methods=["GET", "POST", "PATCH", "OPTIONS"],
                        allow_headers=["Authorization", "Content-Type", "X-Dev-Role", "X-Dev-Locations", "X-Dev-Key"])
 

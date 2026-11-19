@@ -226,3 +226,16 @@ def test_supabase_auth_mode(db_url, monkeypatch, conn):
         err(c.get("/creators", headers={"Authorization": "Bearer good"}), "FORBIDDEN", 403)   # staff only redeem
         err(c.get("/me", headers={"X-Dev-Role": "admin"}), "UNAUTHENTICATED", 401)            # dev headers ignored
     app.state.pool.close()
+
+
+def test_cors(db_url, monkeypatch):
+    monkeypatch.setenv("CORS_ORIGINS", "http://localhost:5173")
+    monkeypatch.setenv("CORS_ORIGIN_REGEX", r"https://.*\.enter\.pro")
+    app = create_app(database_url=db_url, auth_mode="dev")
+    preflight = {"Access-Control-Request-Method": "GET", "Access-Control-Request-Headers": "x-dev-key"}
+    with TestClient(app) as c:
+        for origin, allowed in [("http://localhost:5173", True), ("https://feng-abc123.enter.pro", True),
+                                ("https://evil.example", False)]:
+            r = c.options("/me", headers={"Origin": origin, **preflight})
+            assert (r.headers.get("access-control-allow-origin") == origin) is allowed, origin
+    app.state.pool.close()
