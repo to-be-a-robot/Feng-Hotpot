@@ -50,20 +50,16 @@ def _clean(value: str | None) -> str | None:
 
 
 def parse_count(value: str | None) -> int | None:
-    """'12000', '12,000', '12k', '1.2M', '1.2万' -> int."""
+    """'12000', '12,000', '12k', '1.2M', '1.2万', and annotated forms like
+    '619 (32.9k likes+saves)' or '11k (1,035 notes)' -> int (the first number)."""
     value = _clean(value)
     if value is None:
         return None
-    v = value.replace(",", "").replace(" ", "").lower()
-    multipliers = {"k": 1_000, "m": 1_000_000, "万": 10_000, "w": 10_000}
-    mult = 1
-    if v and v[-1] in multipliers:
-        mult = multipliers[v[-1]]
-        v = v[:-1]
-    try:
-        return int(round(float(v) * mult))
-    except ValueError:
+    m = re.match(r"\s*([0-9][0-9,]*(?:\.[0-9]+)?)\s*([kKmMwW万]?)", value)
+    if not m:
         raise ValueError(f"not a number: {value!r}")
+    multipliers = {"k": 1_000, "m": 1_000_000, "万": 10_000, "w": 10_000}
+    return int(round(float(m.group(1).replace(",", "")) * multipliers.get(m.group(2).lower(), 1)))
 
 
 def parse_timestamp(value: str | None) -> datetime | None:

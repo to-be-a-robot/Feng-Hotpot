@@ -19,6 +19,7 @@ EXAMPLE = REPO_ROOT / "seed" / "example"
 
 @pytest.mark.parametrize("raw,expected", [
     ("12000", 12000), ("12,000", 12000), ("12.4k", 12400), ("1.2M", 1_200_000), ("1.5万", 15000), ("", None),
+    ("619 (32.9k likes+saves)", 619), ("11k (1,035 notes)", 11000), ("368.5k (21.5M likes)", 368500),
 ])
 def test_parse_count(raw, expected):
     assert load_seed.parse_count(raw) == expected
