@@ -31,6 +31,23 @@ language sql immutable as $$ select least(greatest(coalesce(p_limit, 50), 1), 10
 create or replace function excerpt(p text) returns text
 language sql immutable as $$ select left(regexp_replace(coalesce(p, ''), '\s+', ' ', 'g'), 140) $$;
 
+-- Drafts store the placeholder {{offer_link}} instead of the full link (spec §5.6),
+-- so changing the site URL (app_settings.public_base_url) never breaks drafts.
+create or replace function offer_link(p_code text) returns text
+language sql stable set search_path = public as $$ select setting('public_base_url') || '/r/' || p_code $$;
+
+create or replace function render_offer_link(p_text text, p_code text) returns text
+language sql stable set search_path = public as $$
+  select case when p_text is null or p_code is null then p_text
+              else replace(p_text, '{{offer_link}}', offer_link(p_code)) end
+$$;
+
+create or replace function store_offer_link(p_text text, p_code text) returns text
+language sql stable set search_path = public as $$
+  select case when p_text is null or p_code is null then p_text
+              else replace(p_text, offer_link(p_code), '{{offer_link}}') end
+$$;
+
 -- ===========================================================================
 -- Occasions
 -- ===========================================================================
@@ -314,8 +331,9 @@ language sql stable set search_path = public as $$
     'creator', jsonb_build_object('id', c.id, 'handle', '@' || c.handle, 'platform', c.platform,
                                   'profile_url', c.profile_url, 'followers', c.followers),
     'platform', o.platform, 'lang', o.lang,
-    'draft_text', coalesce(o.draft_text, ''), 'edited_text', o.edited_text,
-    'current_text', coalesce(o.edited_text, o.draft_text, ''),
+    'draft_text', coalesce(render_offer_link(o.draft_text, oc.code), ''),
+    'edited_text', render_offer_link(o.edited_text, oc.code),
+    'current_text', coalesce(render_offer_link(coalesce(o.edited_text, o.draft_text), oc.code), ''),
     'status', o.status, 'has_offer_link', o.has_offer_link,
     'referenced_posts', coalesce((
       select jsonb_agg(jsonb_build_object('id', p.id, 'url', p.url, 'excerpt', excerpt(p.caption),
@@ -326,6 +344,7 @@ language sql stable set search_path = public as $$
     'sent_at', iso_utc(o.sent_at), 'replied_at', iso_utc(o.replied_at),
     'updated_at', iso_utc(o.updated_at), 'is_simulated', o.is_simulated)
   from outreach o join creators c on c.id = o.creator_id
+  left join offer_codes oc on oc.campaign_creator_id = o.campaign_creator_id and oc.kind = 'creator'
   where o.id = p_id
 $$;
 
@@ -391,7 +410,9 @@ begin
   -- Repeating an action that already produced the current state is a no-op
   -- (double-click safe), even with the now-stale version.
   if (p_action not in ('edit') and o.status = v_target)
-     or (p_action = 'edit' and o.status = 'draft' and o.edited_text is not distinct from p_edited_text) then
+     or (p_action = 'edit' and o.status = 'draft' and o.edited_text is not distinct from
+         store_offer_link(trim(p_edited_text), (select code from offer_codes
+                                                where campaign_creator_id = o.campaign_creator_id and kind = 'creator'))) then
     return outreach_item(o.id);
   end if;
 
@@ -429,11 +450,15 @@ begin
   end if;
 
   select code into v_code from offer_codes where campaign_creator_id = o.campaign_creator_id and kind = 'creator';
+  if p_action = 'edit' then
+    v_text := store_offer_link(v_text, v_code);
+  end if;
 
   update outreach set
     status          = v_target,
     edited_text     = case when p_action = 'edit' then v_text else edited_text end,
-    has_offer_link  = v_code is not null and strpos(upper(v_text), upper(v_code)) > 0,
+    has_offer_link  = strpos(v_text, '{{offer_link}}') > 0
+                      or (v_code is not null and strpos(upper(v_text), upper(v_code)) > 0),
     approver_id     = case when p_action in ('approve', 'reject') then p_actor_id
                            when v_target = 'draft' then null else approver_id end,
     approver        = case when p_action in ('approve', 'reject') then p_actor_name
@@ -618,7 +643,8 @@ begin
   for f in
     select p.oid::regprocedure from pg_proc p
     where p.pronamespace = 'public'::regnamespace
-      and p.proname = any(array['parse_cursor','clamp_limit','excerpt','api_occasions','creator_json','api_creators',
+      and p.proname = any(array['parse_cursor','clamp_limit','excerpt','offer_link','render_offer_link',
+        'store_offer_link','api_occasions','creator_json','api_creators',
         'outreach_counts','campaign_creator_item','campaign_list_item','api_campaigns','api_campaign',
         'update_campaign_creator','outreach_item','api_outreach','outreach_action','outreach_regenerate',
         'api_summary','brief_metrics','brief_json','api_brief_latest','api_briefs'])

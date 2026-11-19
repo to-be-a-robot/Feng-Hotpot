@@ -1,6 +1,6 @@
 # Pending decisions — where to plug in each answer
 
-The API contract is Tyler's `docs/FRONTEND_SPEC.md` plus `mocks/` on the `frontend` branch.
+The API contract is Tyler's `docs/FRONTEND_SPEC.md` plus `mocks/` (merged into this branch; tests check every response against the mock files).
 Everything below runs on a placeholder until answered. Change the listed file, run the
 "after" step, and tick the box.
 
@@ -25,15 +25,13 @@ Everything below runs on a placeholder until answered. Change the listed file, r
 
 ## From Tyler (frontend and API)
 
-- [ ] **Mock mismatch: return offer start date.** His rule says return codes start the *next* local day, but `mocks/public_offer_return.json` has `"starts": "2026-11-27"` for a first visit on Nov 27. The database returns `2026-11-28`.
-- [ ] **Mock mismatch: creator code length.** Spec §6 says `FENG-COLD-` + 6 characters; mocks show 4 (`FENG-COLD-K7M2`). The database uses 6.
-- [ ] **D6 — Who serves the HTTP API.** Built: `workers/feng_workers/api.py` (FastAPI) implements every §5.2 endpoint except `POST /demo/reset` (P2). If Tyler would rather write routes himself, they call the same database functions, and his routes must:
+- [ ] **D6 — Who serves the HTTP API.** Tyler's spec (v1.1, Nov 18) now proposes this FastAPI service, called from his `src/lib/api.ts` with a mock switch. **Needs Aolin's OK**, since the plan gave the redemption route to Tyler. Built: `workers/feng_workers/api.py` (FastAPI) implements every §5.2 endpoint except `POST /demo/reset` (P2). If Tyler would rather write routes himself, they call the same database functions, and his routes must:
   - take the location and role from the user's `profiles` row, never from the request body;
   - apply the rate limits (§5.5); the database doesn't;
   - map database errors to the API error body: SQLSTATE `PT<http>`, `message` = code, `hint` = human message, `details` = JSON (lift `fields` and `current` to the top level).
-- [ ] **D1 — Sign-in.** The API runs with `AUTH_MODE=dev` (no sign-in, local only). `AUTH_MODE=supabase` is built for the magic-link default: it checks the Bearer token with Supabase and reads role and locations from `profiles`. Still to do once D1 is confirmed: create the users and `profiles` rows, and add RLS policies (RLS is on with no policies, so the browser key can't touch tables).
+- [ ] **D1 — Sign-in.** Tyler's default: magic link, open sign-ups off, plus 2–3 password demo accounts as a backup. The API runs with `AUTH_MODE=dev` (no sign-in, local only). `AUTH_MODE=supabase` is built for the magic-link default: it checks the Bearer token with Supabase and reads role and locations from `profiles`. Still to do once D1 is confirmed: create the users and `profiles` rows, and add RLS policies (RLS is on with no policies, so the browser key can't touch tables).
 - [ ] **`offer.value_cents` in `GET /campaigns/:id` is now null.** Per Aolin's D4, the occasion's default cost is the creator cost (comped meal + fee), not the diner offer's value, so it's no longer shown as the offer value. Cost per creator stays in `creators[].cost_cents`. His mock shows 4500 there; the UI should show "—" for null.
-- [ ] **Frontend URL.** Set `CORS_ORIGINS` in `.env` and `app_settings.public_base_url` (for `/r/:code` links; currently `https://creator-loop.example`).
+- [ ] **Frontend URL** (known after Tyler's first Enter publish, likely `*.enter.pro`). Set `CORS_ORIGINS` in `.env` (Enter preview URL, published URL, `http://localhost:5173`) and `app_settings.public_base_url` (for `/r/:code` links; currently `https://creator-loop.example`). Drafts store `{{offer_link}}` and render the link on read, so changing the URL later doesn't break them. Spec §5.6 calls these settings `ALLOWED_ORIGINS` and `PUBLIC_SITE_URL`; tell Tyler the backend's names.
 - [ ] **Brief has no `/briefs/latest` yet → 404 `NOT_FOUND`.** Confirm that's how he wants "no brief yet" signalled (the UI shows its empty state).
 
 ## Whole team
@@ -44,6 +42,7 @@ Everything below runs on a placeholder until answered. Change the listed file, r
 
 ## Decided
 
+- 2026-11-18 (Tyler, spec update): **creator codes are `FENG-<OCCASION>-` + 6 characters** and **return offers start the next local day**; the mocks now match the backend.
 - 2026-11-18 (Aolin): **D4 cost** = what Feng Hotpot spends to get one creator's post (comped meal + any fee), excluding the offers diners redeem. Stored per creator in `campaign_creators.cost_cents`, defaulting to the occasion's `default_cost_cents`. Cost per first visit = sum of creator costs ÷ first visits.
 - 2026-11-18 (Aolin): **D5** — one location per campaign; codes only work at the campaign's location.
 - 2026-11-18 (Aolin): **Scoring weights** — locality 0.25, brand fit 0.20, comment quality 0.15, engagement 0.15, niche 0.15, cadence 0.10 (`config/scoring.json`).

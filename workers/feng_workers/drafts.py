@@ -9,7 +9,8 @@ API's background task) can run at once without writing the same draft twice.
 
 Safety (spec §6): captions are wrapped as untrusted data; referenced post ids
 must belong to the creator; every link except the offer link is removed; the
-offer link is always present exactly once. Nothing is ever sent.
+offer link is always present exactly once, stored as {{offer_link}} so the
+site URL can change later (spec §5.6). Nothing is ever sent.
 """
 
 from __future__ import annotations
@@ -26,6 +27,7 @@ from .config import load_config
 from .llm import LLM, ai_mode, load_prompt, to_json, untrusted
 
 log = logging.getLogger(__name__)
+OFFER_LINK = "{{offer_link}}"   # rendered to the real link when a draft is read (spec §5.6)
 URL_RE = re.compile(r"https?://[^\s<>\"'）)】]+", re.IGNORECASE)
 
 
@@ -69,20 +71,23 @@ def load_context(conn, outreach_id) -> dict:
 
 
 def clean_message(message: str, offer_url: str) -> str:
-    """Remove every link except the offer link; make sure the offer link appears once."""
+    """Remove every link except the offer link, store the offer link as the
+    placeholder, and make sure it appears exactly once."""
     kept = False
 
     def keep_offer(m: re.Match) -> str:
         nonlocal kept
-        if m.group(0).rstrip(".,!?;:。，！？") == offer_url and not kept:
+        url = m.group(0)
+        trailing = url[len(url.rstrip(".,!?;:。，！？")):]
+        if url.rstrip(".,!?;:。，！？") == offer_url and not kept:
             kept = True
-            return offer_url
+            return OFFER_LINK + trailing
         return ""
 
-    text = URL_RE.sub(keep_offer, message)
+    text = URL_RE.sub(keep_offer, message.replace(OFFER_LINK, offer_url))
     text = re.sub(r"[ \t]{2,}", " ", text).strip()
     if not kept:
-        text = f"{text}\n\n{offer_url}"
+        text = f"{text}\n\n{OFFER_LINK}"
     return text[:2000]
 
 

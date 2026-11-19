@@ -3,6 +3,7 @@ response shapes against Tyler's mocks/ and the spec's error format."""
 
 from __future__ import annotations
 
+import json
 import uuid
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
@@ -12,21 +13,30 @@ from fastapi.testclient import TestClient
 
 from feng_workers import scoring
 from feng_workers.api import create_app
+from feng_workers.config import REPO_ROOT
 
 from .helpers import make_creators
 
-# Keys from Tyler's mocks (origin/frontend:mocks/*.json).
-CREATOR_KEYS = {"id", "handle", "platform", "profile_url", "city", "followers", "score", "score_reason",
-                "score_breakdown", "scored_at", "recent_posts", "active_campaigns", "source"}
-CAMPAIGN_DETAIL_KEYS = {"id", "name", "occasion", "location", "start_date", "end_date", "status", "offer",
-                        "generation", "totals", "creators"}
-CC_KEYS = {"campaign_creator_id", "version", "creator", "code", "outreach_summary", "post_url", "post_date",
-           "cost_cents", "first_visits", "return_visits", "is_simulated"}
-OUTREACH_KEYS = {"id", "version", "campaign_id", "campaign_creator_id", "creator", "platform", "lang", "draft_text",
-                 "edited_text", "current_text", "status", "has_offer_link", "referenced_posts", "generation_status",
-                 "reject_reason", "approver", "decided_at", "sent_at", "replied_at", "updated_at", "is_simulated"}
-LIST_ITEM_KEYS = {"id", "name", "occasion", "location", "start_date", "end_date", "status", "creator_count",
-                  "outreach_counts", "first_visits", "return_visits", "generation", "is_simulated"}
+# Expected fields come straight from Tyler's mocks/ (merged from the frontend branch).
+MOCKS = REPO_ROOT / "mocks"
+
+
+def mock(name):
+    return json.loads((MOCKS / name).read_text(encoding="utf-8"))
+
+
+CREATOR_KEYS = set(mock("creators.json")["items"][0])
+CAMPAIGN_DETAIL_KEYS = set(mock("campaign_detail.json"))
+CC_KEYS = set(mock("campaign_detail.json")["creators"][0])
+OUTREACH_KEYS = set(mock("outreach.json")["items"][0])
+LIST_ITEM_KEYS = set(mock("campaigns_list.json")["items"][0])
+OCCASION_KEYS = set(mock("occasions.json")["items"][0])
+RECENT_KEYS = set(mock("redemptions_recent.json")["items"][0])
+REDEMPTION_KEYS = set(mock("redemption_first.json")["redemption"])
+RETURN_OFFER_KEYS = set(mock("redemption_first.json")["return_offer"])
+PUBLIC_OFFER_KEYS = set(mock("public_offer_active.json"))
+SUMMARY_KEYS = set(mock("summary.json"))
+ME_KEYS = set(mock("me.json"))
 
 
 @pytest.fixture
@@ -54,9 +64,11 @@ def test_full_loop(client, conn):
     scoring.score_all(conn)
 
     me = client.get("/me").json()
+    assert ME_KEYS <= set(me)
     assert me["role"] == "manager" and me["locations"] == ["sunnyvale"] and me["features"]["demo_tools"] is False
 
     occ = client.get("/occasions").json()["items"]
+    assert OCCASION_KEYS <= set(occ[0])
     assert [o["slug"] for o in occ][:3] == ["birthday", "group_night", "cold_week"]
 
     page = client.get("/creators", params={"location": "sunnyvale", "sort": "score_desc", "limit": 100}).json()
@@ -107,12 +119,13 @@ def test_full_loop(client, conn):
     first = client.post("/redemptions", headers=staff,
                         json={"code": code.lower().replace("-", " "), "party_size": 4, "idempotency_key": str(uuid.uuid4())})
     assert first.status_code == 201 and first.json()["redemption"]["type"] == "first"
+    assert REDEMPTION_KEYS <= set(first.json()["redemption"]) and RETURN_OFFER_KEYS <= set(first.json()["return_offer"])
     back = first.json()["return_offer"]["code"]
     e = err(client.post("/redemptions", headers=staff, json={"code": back, "party_size": 4}), "CODE_NOT_STARTED", 422)
     assert e["details"]["starts"]
     err(client.post("/redemptions", headers=staff, json={"code": code, "party_size": 0}), "VALIDATION_FAILED", 422)
     recent = client.get("/redemptions/recent", headers=staff).json()
-    assert recent["items"][0]["id"] == first.json()["redemption"]["id"]
+    assert recent["items"][0]["id"] == first.json()["redemption"]["id"] and RECENT_KEYS <= set(recent["items"][0])
     voided = client.post(f"/redemptions/{first.json()['redemption']['id']}/void", headers=staff, json={"reason": "Typo"})
     assert voided.status_code == 200 and voided.json()["voided_reason"] == "Typo"
 
@@ -124,7 +137,7 @@ def test_full_loop(client, conn):
 
     # Public offer page: no auth, generic 404, lockout after repeated bad codes.
     offer = client.get(f"/public/offers/{code.lower()}").json()
-    assert offer["status"] == "active" and "score" not in str(offer) and offer["recommended_by"].startswith("@")
+    assert PUBLIC_OFFER_KEYS <= set(offer) and offer["status"] == "active" and "score" not in str(offer) and offer["recommended_by"].startswith("@")
     err(client.get("/public/offers/FENG-NOPE-000000"), "OFFER_UNAVAILABLE", 404)
     for _ in range(4):
         client.get("/public/offers/FENG-NOPE-000000")
@@ -137,7 +150,8 @@ def test_full_loop(client, conn):
     assert sim.status_code == 200 and sim.json()["brief"] == {"status": "generating"}
     latest = client.get("/briefs/latest").json()
     assert latest["location"] == "sunnyvale" and "metrics" in latest and "content" in latest
-    assert client.get("/summary").json()["location"] == "sunnyvale"
+    summary = client.get("/summary").json()
+    assert SUMMARY_KEYS <= set(summary) and summary["location"] == "sunnyvale"
 
 
 def test_errors_and_ids(client):

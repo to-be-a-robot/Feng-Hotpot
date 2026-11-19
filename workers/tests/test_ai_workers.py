@@ -131,8 +131,27 @@ def test_drafts_llm_path_cleans_links_and_ids(conn, connect, monkeypatch):
         (cid,)).fetchone()
     code = conn.execute("select code from offer_codes where campaign_id = %s and kind = 'creator'", (cid,)).fetchone()[0]
     assert status == "ready" and link and "evil.example" not in text
-    assert text.count(f"/r/{code}") == 1 and [str(r) for r in refs] == [post_ids[0]]
+    assert text.count("{{offer_link}}") == 1 and "/r/" not in text         # stored as the placeholder
+    assert [str(r) for r in refs] == [post_ids[0]]
     assert '<post id="' in client.calls[0]["messages"][0]["content"]
+
+    # Reading renders the current site URL; changing it later doesn't break the draft.
+    oid = conn.execute("select id from outreach where campaign_id = %s", (cid,)).fetchone()[0]
+    item = conn.execute("select outreach_item(%s)", (oid,)).fetchone()[0]
+    assert item["current_text"].count(f"https://creator-loop.example/r/{code}") == 1
+    conn.execute("update app_settings set value = 'https://feng.enter.pro' where key = 'public_base_url'")
+    try:
+        item = conn.execute("select outreach_item(%s)", (oid,)).fetchone()[0]
+        assert f"https://feng.enter.pro/r/{code}" in item["draft_text"]
+        # A manager's edit containing the full link is stored back as the placeholder.
+        edited = conn.execute(
+            "select outreach_action(p_id => %s, p_action => 'edit', p_version => %s, p_edited_text => %s)",
+            (oid, item["version"], f"Shorter note. https://feng.enter.pro/r/{code}")).fetchone()[0]
+        assert edited["has_offer_link"] and edited["current_text"].endswith(f"/r/{code}")
+        assert conn.execute("select edited_text from outreach where id = %s", (oid,)).fetchone()[0] \
+            == "Shorter note. {{offer_link}}"
+    finally:
+        conn.execute("update app_settings set value = 'https://creator-loop.example' where key = 'public_base_url'")
 
 
 def test_draft_failure_is_recorded(conn, connect, monkeypatch):
