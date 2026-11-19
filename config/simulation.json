@@ -4,11 +4,27 @@
   "first_visit_rate_per_day_at_score_100": 1.2,
   "min_first_visit_rate_per_day": 0.1,
   "unscored_creator_score": 50,
-  "post_delay_days": [0, 3],
+  "post_delay_days": [
+    0,
+    3
+  ],
   "return_probability": 0.3,
-  "return_delay_days": [3, 20],
-  "party_size_weights": {"2": 4, "3": 2, "4": 3, "5": 1, "6": 2, "8": 1},
-  "dinner_hours_local": [17, 21],
+  "return_delay_days": [
+    2,
+    10
+  ],
+  "party_size_weights": {
+    "2": 4,
+    "3": 2,
+    "4": 3,
+    "5": 1,
+    "6": 2,
+    "8": 1
+  },
+  "dinner_hours_local": [
+    17,
+    21
+  ],
   "reviews_per_day": 0.6,
   "review_templates": {
     "positive": [
@@ -28,5 +44,6 @@
     "negative": [
       "Service was slow and our broth refill took a while."
     ]
-  }
+  },
+  "_return_delay_days": "Days between a first visit and the return visit. Kept short so returns show up inside a 14-day fast-forward."
 }

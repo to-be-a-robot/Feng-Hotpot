@@ -18,6 +18,23 @@ post → code redemption → repeat visit, and writes a weekly brief.
 | `seed/example/` | Fictional sample CSVs until the real seed arrives |
 | `PENDING.md` | Open decisions and where to plug each answer in |
 
+## Try it locally (no Supabase, no API key)
+
+```bash
+cd workers
+uv venv && uv pip install -e ".[dev]" && source .venv/bin/activate
+
+python -m feng_workers.devdb             # local Postgres; prints a DATABASE_URL line
+export DATABASE_URL=...                  # paste the line it printed
+python -m feng_workers.load_seed && python -m feng_workers.embed && python -m feng_workers.scoring
+uvicorn feng_workers.api:app --port 8000 # leave running; open http://localhost:8000/docs to click through
+
+# in a second terminal (same venv and DATABASE_URL):
+python -m feng_workers.smoke             # walks the whole loop and prints ✓ / ✗ per step
+```
+
+`python -m feng_workers.devdb --reset` starts over; `--stop` shuts the database down.
+
 ## Run the backend
 
 ```bash
