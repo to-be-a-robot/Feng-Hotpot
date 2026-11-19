@@ -1,0 +1,41 @@
+# Render blueprint: New → Blueprint → pick this repo and the `backend` branch.
+# Fill the values marked `sync: false` when Render asks for them.
+services:
+  - type: web
+    name: feng-hotpot-api
+    runtime: python
+    plan: free                      # free instances sleep when idle; the first request then takes ~1 min
+    rootDir: workers
+    # Editable install (-e) keeps the code next to /config, /prompts and /supabase.
+    buildCommand: pip install -e .
+    # Applies any new migrations, then starts the API. One worker: rate limits live in memory.
+    # --proxy-headers so rate limits see each visitor's IP, not Render's proxy.
+    startCommand: python -m feng_workers.migrate && uvicorn feng_workers.api:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips "*"
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7
+      - key: DATABASE_URL            # Supabase session connection string (port 5432)
+        sync: false
+      - key: ANTHROPIC_API_KEY       # leave empty to run with template text
+        sync: false
+      - key: ANTHROPIC_MODEL
+        value: claude-opus-5-5
+      - key: AUTH_MODE               # switch to `supabase` once sign-in (D1) is set up
+        value: dev
+      - key: DEV_ACCESS_KEY          # clients send it as X-Dev-Key while AUTH_MODE=dev
+        generateValue: true
+      - key: DEV_ROLE
+        value: admin
+      - key: DEV_LOCATIONS
+        value: sunnyvale
+      - key: DEMO_MODE
+        value: "true"
+      - key: CORS_ORIGINS            # Tyler's Enter preview + published URLs, comma-separated
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: EMBEDDING_PROVIDER
+        value: fake

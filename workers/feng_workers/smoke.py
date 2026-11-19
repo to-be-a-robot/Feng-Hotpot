@@ -23,8 +23,9 @@ OK, FAIL = "✓", "✗"
 
 
 class Smoke:
-    def __init__(self, base: str, location: str):
-        self.http = httpx.Client(base_url=base.rstrip("/"), timeout=120)
+    def __init__(self, base: str, location: str, dev_key: str | None = None):
+        self.http = httpx.Client(base_url=base.rstrip("/"), timeout=120,
+                                 headers={"X-Dev-Key": dev_key} if dev_key else {})
         self.loc = location
         self.failed = False
 
@@ -49,8 +50,8 @@ def expect(resp, status=200):
     return resp.json()
 
 
-def run(base: str, location: str) -> bool:
-    s = Smoke(base, location)
+def run(base: str, location: str, dev_key: str | None = None) -> bool:
+    s = Smoke(base, location, dev_key)
     ctx: dict = {}
     print(f"Smoke test against {base} ({location})\n")
 
@@ -147,8 +148,11 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--base", default="http://localhost:8000")
     ap.add_argument("--location", default="sunnyvale")
+    ap.add_argument("--dev-key", default=None, help="X-Dev-Key, if the server sets DEV_ACCESS_KEY "
+                                                   "(defaults to DEV_ACCESS_KEY from .env)")
     args = ap.parse_args(argv)
-    sys.exit(0 if run(args.base, args.location) else 1)
+    from .config import env
+    sys.exit(0 if run(args.base, args.location, args.dev_key or env("DEV_ACCESS_KEY")) else 1)
 
 
 if __name__ == "__main__":

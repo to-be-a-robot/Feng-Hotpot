@@ -9,7 +9,9 @@ the error body format, and background jobs (draft writing, brief generation).
 
 AUTH_MODE (PENDING D1):
   dev       no sign-in; the user comes from DEV_* env vars (and X-Dev-Role /
-            X-Dev-Locations headers, to try staff vs manager). Local use only.
+            X-Dev-Locations headers, to try staff vs manager). If DEV_ACCESS_KEY
+            is set, every signed-in endpoint also needs header X-Dev-Key with
+            that value; always set it when the server is reachable online.
   supabase  Authorization: Bearer <Supabase session token>; role and
             locations come from the profiles table.
 """
@@ -134,6 +136,9 @@ class Auth:
 
     def __call__(self, request: Request) -> User:
         if self.mode == "dev":
+            key = env("DEV_ACCESS_KEY")
+            if key and request.headers.get("x-dev-key") != key:
+                raise ApiError("UNAUTHENTICATED", 401, "Missing or wrong X-Dev-Key.")
             role = request.headers.get("x-dev-role") or env("DEV_ROLE", "admin")
             locs = request.headers.get("x-dev-locations") or env("DEV_LOCATIONS", "sunnyvale")
             return User(env("DEV_USER_ID", "00000000-0000-4000-8000-000000000001"), "dev@example.com",
@@ -235,14 +240,16 @@ def create_app(database_url: str | None = None, auth_mode: str | None = None) ->
     auth = Auth(auth_mode, pool)
     limiter = RateLimiter()
     if auth_mode == "dev":
-        log.warning("AUTH_MODE=dev: no sign-in. Never expose this server publicly.")
+        log.warning("AUTH_MODE=dev: no sign-in%s.",
+                    " (X-Dev-Key required)" if env("DEV_ACCESS_KEY") else
+                    ". Set DEV_ACCESS_KEY before exposing this server online")
 
     app = FastAPI(title="Feng Hotpot Creator Loop API", version="0.1.0")
     app.state.pool, app.state.limiter = pool, limiter
     origins = [o.strip() for o in (env("CORS_ORIGINS", "http://localhost:5173,http://localhost:3000") or "").split(",") if o.strip()]
     app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=False,
                        allow_methods=["GET", "POST", "PATCH", "OPTIONS"],
-                       allow_headers=["Authorization", "Content-Type", "X-Dev-Role", "X-Dev-Locations"])
+                       allow_headers=["Authorization", "Content-Type", "X-Dev-Role", "X-Dev-Locations", "X-Dev-Key"])
 
     @app.middleware("http")
     async def request_id(request: Request, call_next):

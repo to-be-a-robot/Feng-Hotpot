@@ -180,3 +180,15 @@ def test_migrations_are_recorded_once(db_url):
     with psycopg.connect(db_url, autocommit=True) as conn:
         done, pending = status(conn)
     assert pending == [] and "20261119000005_demo_reset.sql" in done
+
+
+def test_dev_access_key(db_url, monkeypatch):
+    monkeypatch.setenv("DEV_ACCESS_KEY", "s3cret")
+    app = create_app(database_url=db_url, auth_mode="dev")
+    with TestClient(app) as c:
+        err(c.get("/me"), "UNAUTHENTICATED", 401)
+        err(c.get("/me", headers={"X-Dev-Key": "wrong"}), "UNAUTHENTICATED", 401)
+        assert c.get("/me", headers={"X-Dev-Key": "s3cret"}).status_code == 200
+        assert c.get("/health").status_code == 200                       # public endpoints stay open
+        err(c.get("/public/offers/FENG-NOPE-000000"), "OFFER_UNAVAILABLE", 404)
+    app.state.pool.close()
