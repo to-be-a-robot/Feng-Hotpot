@@ -32,7 +32,7 @@ import psycopg
 from fastapi import BackgroundTasks, Body, Depends, FastAPI, Query, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from psycopg.types.json import Jsonb
 from psycopg_pool import ConnectionPool
 from pydantic import BaseModel, Field
@@ -305,6 +305,10 @@ def create_app(database_url: str | None = None, auth_mode: str | None = None) ->
             raise ApiError("FORBIDDEN", 403, "You don't have access to this.")
 
     # ------------------------------------------------------------------ session
+
+    @app.get("/", include_in_schema=False)
+    def root():
+        return RedirectResponse("/docs")
 
     @app.get("/health")
     def health():
