@@ -34,7 +34,7 @@ The team plan is kept as the base. These changes close logic gaps found while tu
 | D1 | How do managers sign in? | Tyler + Shinjini | Email magic link (Supabase Auth). The `profiles` table holds role and locations. Open sign-ups off; 2–3 password demo accounts as a backup (the built-in email sender has a low hourly limit) |
 | D2 | Return-offer design: personal return code (no data) or capture phone/email (needs consent)? | Aolin | Return code, no personal data |
 | D3 | What is the return offer, and for how long is it valid? | Aolin / Sherry Gu | "Welcome back" dessert, 30 days, same location |
-| D4 | How is `cost` defined (meal value, creator fee, both)? | Aolin | Meal value per creator, entered in cents, editable |
+| D4 | How is `cost` defined (meal value, creator fee, both)? | Aolin | **Decided (Aolin, Nov 18):** what the restaurant spends to get one creator's post (comped meal plus any fee), not the value of the offers diners redeem. Entered per creator in cents (`cost_cents`), starting from the occasion's `default_cost_cents`, editable |
 | D5 | Are codes valid at one location or several? | Aolin | One location per campaign |
 | D6 | Who serves the HTTP API, and what builds the frontend? | Tyler, Shinjini, Aolin | Shinjini's Python FastAPI service serves the section 5 endpoints at a public HTTPS URL. The frontend (React + Vite, built in Enter) calls it through one file with a mock switch. Needs Aolin's OK, because the team plan gave the redemption route to Tyler |
 | D7 | How do judges access the demo? | Tyler + Aolin | A read-mostly demo account plus a "Reset demo" tool |
@@ -219,8 +219,11 @@ Standard state rules (apply to every screen):
 - `401` → login with return path. `403` → 403 page. `429` → "Too many requests. Try again in {n}s."
 - Refetch data when the browser tab regains focus.
 - Offline: a banner "You're offline"; actions are disabled; never show success for an action that didn't reach the server.
+- Slow server: the hosted API runs on a free plan that sleeps when idle, and the first request after a quiet period can take about a minute. After 3 seconds of loading, add the line "Waking up the server. This can take up to a minute." under the skeleton. Do not give up before 75 seconds; only then show the error state with **Try again**. Safe reads may be retried once automatically; saves are never retried automatically.
 
 ### 4.1 Login (`/login`)
+
+> While the deployed server runs in preview mode (`AUTH_MODE=dev`, section 5.6) there is no login page: the app sends the shared preview key and a role menu chooses manager, staff or admin. This screen is built for real sign-in (prompt 8B).
 
 ```text
 +------------------------------------+
@@ -419,7 +422,7 @@ Detail:
 3. Codes show with a copy button. The QR encodes `https://<site>/r/<CODE>` and is generated in the browser; **Download** saves a PNG named `<CODE>.png` (error correction M, quiet zone included).
 4. **Post link**: inline edit. Must be `https://`, trimmed, at most 2048 characters. Domain is shown; links open in a new tab with `rel="noopener noreferrer"`. A domain outside the known list (instagram.com, tiktok.com, xiaohongshu.com, xhslink.com) gets a soft warning, not a block.
 5. **Post date**: not more than 1 day in the future; a date before the campaign starts gets a warning.
-- **Cost** is entered in dollars, stored in cents, default from the occasion (D4). Range $0–$10,000.
+- **Cost** is what the restaurant spends on that creator (comped meal plus any fee), entered in dollars, stored in cents, default from the occasion's `default_cost_cents` (D4, decided). Range $0–$10,000. The header shows only the offer title: `offer.value_cents` is `null` (the diner offer's value is not tracked), and the UI must never show it or compute with it.
 - Campaigns whose end date has passed are read-only and marked **Ended**.
 - Simulated rows show a **Simulated** badge; they are never mixed silently with real ones.
 - Sample numbers in the wireframe are illustrative (the table shows 3 of the campaign's 5 creators; totals cover all 5).
@@ -452,7 +455,7 @@ Detail:
 4. Headline and highlights from `content`; rendered as plain text.
 6. Review signals come from `reviews` (simulated in the demo and badged).
 7. Exactly 3 actions normally; the UI renders whatever count it receives (0–5). A creator link is disabled if the creator no longer exists.
-- No brief yet: "Your first brief arrives after the first full week." Demo role also sees **Generate brief**.
+- No brief yet: `GET /briefs/latest` answers `404 NOT_FOUND`. The screen treats that one answer as the empty state, not as an error, and shows "Your first brief arrives after the first full week." Demo role also sees **Generate brief**. Any other failure (500, network) shows the normal error state with Retry.
 - If generation failed, show the last successful brief with its date.
 
 ### 4.7 Offer page (`/r/:code`) — public, phone-first
@@ -642,7 +645,7 @@ Response `201`:
 {
   "id": "cmp_1", "name": "First cold week · Sunnyvale", "occasion": { "id": "occ_cold_week", "name": "First cold week" },
   "location": "sunnyvale", "start_date": "2026-11-20", "end_date": "2026-12-04", "status": "active",
-  "offer": { "title": "Free appetizer for your table", "value_cents": 4500 },
+  "offer": { "title": "Free appetizer for your table", "value_cents": null },
   "generation": { "status": "running", "total": 10, "done": 8, "failed": 1 },
   "totals": { "first_visits": 12, "return_visits": 3, "cost_cents": 22500, "includes_simulated": true },
   "creators": [ {
@@ -714,7 +717,7 @@ Response `201`:
 ```
 For a return code, `type` is `return`, `visit_number` is 2, and `return_offer` is `null`. The server must make redemption **atomic** (a single-use code can be used once even under concurrent requests). Location comes from the user's profile; a mismatch with `location` → `CODE_WRONG_LOCATION`.
 
-**`GET /briefs/latest?location=sunnyvale`**
+**`GET /briefs/latest?location=sunnyvale`** (`404 NOT_FOUND` when no brief exists yet; the UI shows its empty state)
 ```json
 {
   "id": "b_1", "week_of": "2026-11-30", "location": "sunnyvale",
@@ -776,9 +779,35 @@ Brief numbers are totals to date for the campaigns active that week, not weekly 
 
 Frontend (environment variables, public by design): `VITE_API_BASE_URL` (must be https), `VITE_USE_MOCKS` (`true` serves `mocks/` from memory), `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`.
 
-Backend: `PUBLIC_SITE_URL` (used to build `/r/:code` links and QR codes) and `ALLOWED_ORIGINS` (CORS allowlist: the Enter preview URL, the published URL, and `http://localhost:5173` for local development). Store a placeholder in draft text and build the offer link from `PUBLIC_SITE_URL` when a draft is returned, so a URL change does not break existing drafts. Add the frontend URLs to Supabase's Auth redirect list. Enter's changelog (Sep 30, 2026) says its default publish domain is now `.enter.pro`, replacing `.enterapp.pro`; the real address is known after the first publish.
+Backend (names follow the backend's `.env.example` on the `backend` branch): `CORS_ORIGINS` is the list of web addresses allowed to call the API: the Enter preview URL, the published URL, and `http://localhost:5173` for local development. (Earlier drafts of this spec called it `ALLOWED_ORIGINS`.) `app_settings.public_base_url` holds the public site address used to build `/r/:code` links and QR codes. Store a placeholder in draft text and build the offer link from that address when a draft is returned, so a URL change does not break existing drafts. Add the frontend URLs to Supabase's Auth redirect list.
+
+Sign-in modes (set on the server by `AUTH_MODE`):
+
+- **`dev` (the deployed server's setting until D1 is set up).** No sign-in; the server treats every caller as one user. Every signed-in endpoint needs the header `X-Dev-Key` whose value is the server's `DEV_ACCESS_KEY` (shared privately by Shinjini). `X-Dev-Role` (`manager`, `staff` or `admin`; default `admin`) and `X-Dev-Locations` are optional and let the frontend try each role. `/public/*` endpoints need no key. The key ends up in the published page's code, which is acceptable only as a temporary hackathon preview with fictional data. It is read from a `VITE_` environment variable, never typed into source, chat or GitHub.
+- **`supabase` (real sign-in).** The frontend signs in with Supabase Auth and sends `Authorization: Bearer <access_token>`; the server checks the token and reads role and locations from `profiles`. Accounts are created by the backend owner (`python -m feng_workers.users add ...`). No `X-Dev-*` header is ever sent in this mode.
+
+Other backend settings: `CORS_ORIGIN_REGEX` (optional) matches changing preview addresses, for example `https://.*\.enter\.pro`; `DEMO_MODE=true` turns on the demo tools (fast-forward, brief generation, reset) for the admin role. Supabase key names differ by side: the backend reads `SUPABASE_URL` and `SUPABASE_ANON_KEY` (or the `NEXT_PUBLIC_SUPABASE_*` names in its `.env.example`); the Enter frontend uses `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`. Same project, same public key, different variable names. The service-role key stays on the backend only.
+
+Enter's changelog (Sep 30, 2026) says its default publish domain is now `.enter.pro`, replacing `.enterapp.pro`; the real address is known after the first publish.
 
 ---
+
+### 5.7 Where the running API differs from the sample files
+
+From the backend guide (`docs/BACKEND_GUIDE.md` on the `backend` branch). The frontend must handle these. If this table and the running API ever disagree, the running API wins and this spec is corrected the same day.
+
+| Where | Sample file | Running API | What the frontend does |
+|---|---|---|---|
+| All ids | `c_1`, `cmp_1`, `occ_cold_week` | UUIDs | Treat every id as an opaque string. Never parse or pattern-match it |
+| `GET /occasions` items | `id`, `name`, `offer_title`, `offer_details`, `default_cost_cents` | The same, plus `slug`, `name_zh`, `return_offer`, `return_valid_days` | Ignore the extras. `POST /campaigns` accepts the UUID or the `slug` as `occasion_id` |
+| `occasion` in campaign detail and list | `{id, name}` | `{id, slug, name}` | Ignore `slug` |
+| `offer.value_cents` in campaign detail | a number | `null` (D4) | Show only the offer title |
+| `return_offer` in `POST /redemptions` | `code, url, title, expires_at` | plus `starts_at` (the next local day) | Optional: show "Valid from …" |
+| `GET /creators` items | as the sample | plus `display_name` | Ignore |
+| `GET /briefs/latest` with no brief | not shown | `404 NOT_FOUND` | Show the empty state (section 4.6) |
+| `POST /briefs/generate`, `POST /simulate`, `POST /demo/reset` | `/demo/reset` has no sample | Admin role and server `DEMO_MODE=true`, else `403` or `404` | Show the demo tools only when `GET /me` has `features.demo_tools` true |
+| `POST /demo/reset` | (P2) | Body `{"confirm": "RESET"}`, answer `{"deleted": {...}}` | Ask for confirmation in the UI first |
+| First request after a quiet period | n/a | Can take about a minute (free plan sleeps) | Section 4.0 "Slow server" rule |
 
 ## 6. Database changes (for Shinjini)
 

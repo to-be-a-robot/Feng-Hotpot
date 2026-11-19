@@ -6,7 +6,7 @@
   "start_date": "2026-11-20",
   "end_date": "2026-12-04",
   "status": "active",
-  "offer": { "title": "Free appetizer for your table", "value_cents": 4500 },
+  "offer": { "title": "Free appetizer for your table", "value_cents": null },
   "generation": { "status": "running", "total": 10, "done": 8, "failed": 1 },
   "totals": { "first_visits": 12, "return_visits": 3, "cost_cents": 22500, "includes_simulated": true },
   "creators": [

@@ -11,7 +11,7 @@ The prompts are built from `FRONTEND_SPEC.md` (section 4 for screens, section 5 
 | 1. Setup | You open Enter | Paste Part 0 | Enter says it understands and builds nothing |
 | 2. Build the screens | Phase 1 is done | Send prompts 1 to 7, one at a time. Styling stays plain and neutral. | All seven screens pass their "Done when" lists and the safety check passes |
 | 3. Visual customization | Phase 2 is done, **not before** | Brand colors, fonts, logo; polish the phone pages | The whole demo path looks consistent on desktop and phone |
-| 4. Real API and sign-in | Shinjini's API has a public HTTPS URL | Send prompt 8 | The demo path works on real data |
+| 4. Real API | Shinjini's API has a public HTTPS URL | Send prompt 8A (preview key), then 8B (real sign-in) when it is set up | The demo path works on real data |
 | 5. Export to GitHub | After each approved screen and at the end | Download, unzip into `app/`, scan for secrets, commit | The code is on your branch |
 
 **When does the visual part start?** After Phase 2. In Phase 2 the look is deliberately plain: neutral grays and one placeholder red accent. Do not spend credits on looks until all seven screens work and the demo path is clickable. The only exceptions are bugs that make something unreadable, such as overflowing text. Phase 3 matches the team plan's "Day 2 PM: demo polish". Because every color lives in one set of variables, swapping in the brand colors (prompt 3A) is a single cheap prompt, so you can do that part as soon as Aolin sends the colors.
@@ -84,19 +84,21 @@ I am building a small web app for Feng Hotpot, a Sichuan hotpot restaurant with 
 
 USERS: (1) a manager, who uses a desktop dashboard with four pages: Creators, Outreach, Campaigns, Weekly Brief; (2) restaurant staff, who use a phone page to redeem codes; (3) diners, who open a public offer page on their phone from a QR code or link.
 
-STACK: React, Vite, TypeScript and Tailwind. Do NOT create a database, do NOT use Enter Cloud, and do NOT connect Supabase. All data goes through one file, src/lib/api.ts, which has one function per endpoint. It reads the base URL from VITE_API_BASE_URL. When VITE_USE_MOCKS is "true" (the default), it returns the JSON sample data kept in src/mocks/, with a short delay, and keeps any changes in memory so the screens are interactive. The screens must never read the sample files directly. api.ts unwraps responses, so screens never see an envelope.
+STACK: React, Vite, TypeScript and Tailwind. Do NOT create a database, do NOT use Enter Cloud, and do NOT connect Enter's own Supabase or any other backend integration. (Later, in prompt 8B, sign-in will call a Supabase project that the backend team owns, using two public settings.) All data goes through one file, src/lib/api.ts, which has one function per endpoint. It reads the base URL from VITE_API_BASE_URL. When VITE_USE_MOCKS is "true" (the default), it returns the JSON sample data kept in src/mocks/, with a short delay, and keeps any changes in memory so the screens are interactive. The screens must never read the sample files directly. api.ts unwraps responses, so screens never see an envelope.
 
 API FUNCTIONS: api.ts will export exactly these functions, with these names. Do not create them yet. When a screen needs one, create it with this exact name, and reuse it on every later screen instead of making a new one: getMe(), getSummary(location), getCreators({location, platform, minScore, q, sort}), getOccasions(), getCampaigns(), createCampaign(body), getCampaign(id), patchCampaignCreator(campaignId, campaignCreatorId, body), getOutreach({campaignId, status, lang}), patchOutreach(id, body), regenerateOutreach(id, version), getPublicOffer(code), redeem(body), getRecentRedemptions(), getRedemption(id), voidRedemption(id, reason), getLatestBrief(location), generateBrief(location), simulate(campaignId, days). Define TypeScript types for each response in src/lib/types.ts, based on the sample data sent with each screen, and reuse them everywhere.
 
 DATA RULES: Use the fields in the data exactly as given. Do not compute statuses, ages or counts from today's date, because the sample dates are fictional and some are in the future.
 
-TEST TOOLS (mock mode only): when the URL has ?dev=1, show a small floating panel with three switches: "Next request fails with a network error", "Next save returns a stale-version conflict", and "Slow responses (3 seconds)". Hide the panel whenever VITE_USE_MOCKS is not "true".
+TEST TOOLS (mock mode only): when the URL has ?dev=1, show a small floating panel with four switches: "Next request fails with a network error", "Next save returns a stale-version conflict", "Slow responses (3 seconds)", and "No brief yet" (getLatestBrief then answers 404 NOT_FOUND). Hide the panel whenever VITE_USE_MOCKS is not "true".
 
 DESIGN RULES (the "box"):
 - Light theme only. Font: Inter, with fallbacks for Chinese text (PingFang SC, Noto Sans SC, Microsoft YaHei). The UI is in English; message text can be English or Chinese.
 - Define all colors, fonts, radii and spacing as CSS variables in one place. Neutral grays (ink #1D2330, muted #5B6472, lines #CFD4DC, fill #F3F4F7) and one red accent (a placeholder brand red, easy to change). Border radius 8px. Clean, simple, data-friendly layout.
 - Never rely on color alone: show status as words. Visible keyboard focus. Touch targets at least 44px on phone pages.
 - Every screen needs loading, empty and error states. Errors show a message, a Try again button, and the request id if present.
+- Slow server: if a request takes longer than 3 seconds, add the line "Waking up the server. This can take up to a minute." under the loading skeleton. Wait up to 75 seconds before showing the error state.
+- Ids are opaque strings (the real server uses long random ids, not c_1 or cmp_1). Never parse them or depend on their format.
 
 SAFETY RULES:
 - Render all text (creator captions, AI drafts, brief text) as plain text. Never use dangerouslySetInnerHTML or convert text to HTML.
@@ -206,7 +208,7 @@ Build the Campaigns pages. Build only these.
 
 LIST (route /campaigns): a table with name, dates, creators, sent, replied, first visits and status (Active or Ended), and a "New campaign" button that goes to Creators. "Sent" counts messages marked sent, replied or declined; "Replied" counts replied. Take the status from the data; do not work it out from today's date.
 
-DETAIL (route /campaigns/:id): a header with the campaign name, a status pill, dates, location and the offer title. Four summary tiles: First visits, Return visits, Repeat rate (return visits divided by first visits, shown as a percent), Cost per first visit (total cost divided by first visits, in dollars; a dash if there are no first visits). Show a "Simulated" badge on tiles when totals.includes_simulated is true. Then a table, one row per creator: handle, code with a Copy button and a "QR ↓" button that downloads a PNG named <CODE>.png (the QR encodes the code's url; generate it in the browser), outreach status (the furthest status among the creator's messages: replied or declined, then sent, approved, draft), post link, post date, first visits, return visits, cost, and a Simulated badge where is_simulated is true.
+DETAIL (route /campaigns/:id): a header with the campaign name, a status pill, dates, location and the offer title (show only the title; offer.value_cents is null, never show or use it). Four summary tiles: First visits, Return visits, Repeat rate (return visits divided by first visits, shown as a percent), Cost per first visit (total cost divided by first visits, in dollars; a dash if there are no first visits). Show a "Simulated" badge on tiles when totals.includes_simulated is true. Then a table, one row per creator: handle, code with a Copy button and a "QR ↓" button that downloads a PNG named <CODE>.png (the QR encodes the code's url; generate it in the browser), outreach status (the furthest status among the creator's messages: replied or declined, then sent, approved, draft), post link, post date, first visits, return visits, cost, and a Simulated badge where is_simulated is true.
 
 INLINE EDITS: the post link is editable in the row: only https:// links, trimmed, at most 2048 characters, with the message "Use a link that starts with https://" otherwise. The post date cannot be more than 1 day in the future. Cost is entered in dollars and stored in cents. Saves send the row's version; handle a stale-version error with a clear message. Ended campaigns are read-only.
 
@@ -237,7 +239,7 @@ TILES (render only from the metrics object, never from text): First visits, Retu
 
 BODY: an "AI-written" label with the headline and highlights from content. A "Creators by visits driven" list (handle, visits, cost) and a "Review signals" card (percent positive with a Simulated badge when review_summary.is_simulated is true, and the themes). A "Recommended actions" row of cards from content.actions (show however many arrive, 0 to 5); a card with a creator_id shows "Go to creator", otherwise no link. A footer line: "Numbers come from your records. The wording is written by AI."
 
-EMPTY AND FAILURE: if there is no brief, show "Your first brief arrives after the first full week."
+EMPTY AND FAILURE: getLatestBrief answers 404 with error code NOT_FOUND when no brief exists yet. Treat that one answer as the empty state (not an error) and show "Your first brief arrives after the first full week." Test it with the "No brief yet" switch in the test-tools panel. Any other failure shows the normal error state with a Retry button.
 
 SAMPLE DATA: brief.json and brief_empty_metrics.json (use the second to test the empty case):
 [paste both files here]
@@ -356,15 +358,29 @@ Then fix the top issues with the templates above, one at a time.
 
 ## Phase 4: Real API and sign-in
 
-Send this only after Shinjini's API has a public HTTPS URL and you have its address.
+Send these only after Shinjini's API has a public HTTPS URL and you have its address. The backend's own guides are `docs/BACKEND_GUIDE.md` (how the app calls it) and `docs/DEPLOY.md` (how it is put online) on the `backend` branch; the API's live documentation is at `<API address>/docs`.
 
-### 8. Switch to the real API
+### 8A. Connect to the real API in preview mode (shared key)
+
+**Do this only after Shinjini confirms:** (1) the API has a public `https://` address, (2) the server's `CORS_ORIGINS` list includes your Enter preview address (or `CORS_ORIGIN_REGEX` covers `enter.pro` addresses), and (3) you have the shared preview key, sent privately. Until real sign-in is set up, the deployed server runs in a preview mode that has no sign-in and wants a shared key in a request header instead.
+
+**About the key.** It will be visible in the published page's code to anyone who looks. Use it only with fictional data, and do not post the published address publicly. Keep it out of the chat, out of the code and out of GitHub: set `VITE_DEV_KEY` where Enter keeps project environment variables or secrets (look in Project Settings). If Enter has no such place, do not paste the key anywhere; ask the team to go straight to 8B instead. Also set `VITE_API_BASE_URL` there.
 
 ```text
-Switch the app from sample data to the real API. Set VITE_USE_MOCKS to "false" and VITE_API_BASE_URL to <the API URL>. Add sign-in using Supabase Auth with magic links (VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY from environment variables). Send the session token in an Authorization: Bearer header on every request except /public/*. Redirect signed-out users to /login and return them to the page they asked for afterwards (accept only paths starting with /). After sign-in call GET /me and show only the pages the role allows: managers see the dashboard, staff see only /redeem. Always respond to a sign-in request with "If this email is on the team list, a sign-in link is on its way." Never put a service or secret key anywhere in the code.
+Switch the app from sample data to the real API in preview mode. Set VITE_USE_MOCKS to "false". Read VITE_API_BASE_URL (an https address) and VITE_DEV_KEY from environment variables; never write either value into the code. Send the header X-Dev-Key with the value of VITE_DEV_KEY on every request except those to /public/*. Add a small "Preview role" menu, shown only when VITE_DEV_KEY is set, with the choices manager, staff and admin; it sends the header X-Dev-Role with the chosen value (default admin), and the app reloads GET /me when it changes. Do not build a sign-in page in this mode: the role from GET /me decides what the user sees (managers see the dashboard, staff see only /redeem). A 401 answer here means the key is missing or wrong: show "The preview key is missing or wrong. Ask Shinjini." instead of redirecting to /login. Treat all ids as opaque strings. Keep working with sample data when VITE_USE_MOCKS is "true". Change nothing about the screens themselves.
 ```
 
-**Watch for:** the API address typed with `http://` instead of `https://`; the browser blocking requests because the server's allowed origins don't include your Enter URL (a "CORS" error; send the exact address to Shinjini); any secret or service key appearing in the code. **Done when:** you can sign in, the Creators page shows real data, and staff accounts can open only `/redeem`.
+**Watch for:** the key appearing in the code or in the chat (search for it); the API address typed with `http://`; a browser CORS error (send the exact preview address to Shinjini); the first request taking about a minute because the free server was asleep (the screen should say it is waking up, not fail); ids that are long random strings working everywhere. **Done when:** the Creators page shows the server's creators, you can create a campaign and see drafts appear, and switching the preview role to staff leaves only `/redeem`.
+
+### 8B. Switch to real sign-in
+
+**Do this only after Shinjini confirms:** (1) accounts exist (created with the `users add` command), (2) the server runs with `AUTH_MODE=supabase`, and (3) your Enter preview and published addresses are on Supabase's redirect list. Ask Shinjini for the two public Supabase settings (the project URL and the publishable key). Never accept a service or secret key.
+
+```text
+Replace the preview key with real sign-in. Remove the Preview role menu and every use of VITE_DEV_KEY, X-Dev-Key, X-Dev-Role and X-Dev-Locations. Add sign-in using Supabase Auth with magic links (VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY from environment variables), and a password form as a backup for demo accounts. Send the session token in an Authorization: Bearer header on every request except /public/*. Redirect signed-out users to /login and return them to the page they asked for afterwards (accept only paths starting with /). After sign-in call GET /me and show only the pages the role allows: managers see the dashboard, staff see only /redeem. Always respond to a magic-link request with "If this email is on the team list, a sign-in link is on its way." Never put a service or secret key anywhere in the code.
+```
+
+**Watch for:** any leftover `X-Dev-*` header (search the code); the sign-in link opening an address that is not on the redirect list; any secret or service key in the code. **Done when:** you can sign in, the Creators page shows real data, staff accounts can open only `/redeem`, and signing out returns you to `/login`.
 
 ## Phase 5: Getting the code into GitHub without the connector
 

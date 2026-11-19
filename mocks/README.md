@@ -10,7 +10,7 @@ Timestamps are UTC. Money is in integer cents. Dates are in the location's time 
 
 The files describe one consistent campaign so they can be compared with each other.
 
-- **Campaign:** "First cold week · Sunnyvale" (`cmp_1`), Nov 20 – Dec 4, 2026, 5 creators, 10 drafts, offer "Free appetizer for your table", $45 per creator.
+- **Campaign:** "First cold week · Sunnyvale" (`cmp_1`), Nov 20 – Dec 4, 2026, 5 creators, 10 drafts, offer "Free appetizer for your table", $45 per creator. Cost means what the restaurant spends per creator (decision D4), so `offer.value_cents` is `null`: the diner offer's value is not tracked and the UI shows only the offer title.
 - **Creators in it:** `c_1` @bayareabites, `c_2` @southbayfood, `c_3` @xiaochi.sv, `c_5` @foodiesv, `c_7` @小吃日记. A second campaign, "Finals week" (`cmp_2`), has `c_4`.
 - **Results to date (through Dec 4):** 12 first visits and 3 return visits, $225 total cost, so $18.75 per first visit and a 25% repeat rate.
 - **Outreach:** 10 messages: 3 replied, 1 approved, 1 sent, 1 declined, 1 rejected, 3 drafts (one ready, one failed, one still being written).
