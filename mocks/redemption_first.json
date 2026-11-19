@@ -1,0 +1,18 @@
+{
+  "redemption": {
+    "id": "r_3",
+    "type": "first",
+    "visit_number": 1,
+    "redeemed_at": "2026-11-28T02:42:00Z",
+    "location": "sunnyvale",
+    "party_size": 2,
+    "creator_handle": "@bayareabites",
+    "offer_title": "Free appetizer for your table"
+  },
+  "return_offer": {
+    "code": "BACK-7H2K-QX9M",
+    "url": "https://creator-loop.example/r/BACK-7H2K-QX9M",
+    "title": "Welcome back: free dessert",
+    "expires_at": "2026-12-28T07:59:59Z"
+  }
+}

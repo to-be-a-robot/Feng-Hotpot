@@ -1,0 +1,26 @@
+{
+  "id": "b_2",
+  "week_of": "2026-12-07",
+  "location": "sunnyvale",
+  "generated_at": "2026-12-12T17:02:00Z",
+  "data_through": "2026-12-11",
+  "metrics": {
+    "first_visits": 0,
+    "return_visits": 0,
+    "repeat_visit_rate": null,
+    "cost_per_first_visit_cents": null,
+    "response_rate": null,
+    "sent_count": 0,
+    "response_count": 0,
+    "hours_saved_estimate": 0,
+    "simulated_share": 0
+  },
+  "top_creators": [],
+  "review_summary": null,
+  "content": {
+    "headline": "No activity this week.",
+    "highlights": [],
+    "review_signals": [],
+    "actions": []
+  }
+}

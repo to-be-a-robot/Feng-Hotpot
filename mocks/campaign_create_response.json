@@ -1,0 +1,9 @@
+{
+  "campaign": {
+    "id": "cmp_1",
+    "name": "First cold week · Sunnyvale",
+    "status": "active",
+    "generation": { "status": "running", "total": 10, "done": 0, "failed": 0 }
+  },
+  "skipped": []
+}

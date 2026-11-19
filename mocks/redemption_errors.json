@@ -1,0 +1,34 @@
+{
+  "CODE_INVALID": {
+    "http": 422,
+    "body": { "error": { "code": "CODE_INVALID", "message": "We don't recognize that code.", "request_id": "req_r01" } }
+  },
+  "CODE_NOT_STARTED": {
+    "http": 422,
+    "body": { "error": { "code": "CODE_NOT_STARTED", "message": "This offer hasn't started yet.", "details": { "starts": "2026-11-20" }, "request_id": "req_r02" } }
+  },
+  "CODE_EXPIRED": {
+    "http": 422,
+    "body": { "error": { "code": "CODE_EXPIRED", "message": "This offer has ended.", "details": { "ended": "2026-12-04" }, "request_id": "req_r03" } }
+  },
+  "CODE_ALREADY_USED": {
+    "http": 422,
+    "body": { "error": { "code": "CODE_ALREADY_USED", "message": "This code was already used.", "details": { "used_at": "2026-11-28T02:20:00Z", "location": "sunnyvale" }, "request_id": "req_r04" } }
+  },
+  "CODE_WRONG_LOCATION": {
+    "http": 422,
+    "body": { "error": { "code": "CODE_WRONG_LOCATION", "message": "This code is valid at another location.", "details": { "valid_location": "sunnyvale" }, "request_id": "req_r05" } }
+  },
+  "CODE_VOIDED": {
+    "http": 422,
+    "body": { "error": { "code": "CODE_VOIDED", "message": "This code was cancelled.", "request_id": "req_r06" } }
+  },
+  "VALIDATION_FAILED": {
+    "http": 422,
+    "body": { "error": { "code": "VALIDATION_FAILED", "message": "Check the highlighted fields.", "fields": { "party_size": "Must be between 1 and 50" }, "request_id": "req_r07" } }
+  },
+  "RATE_LIMITED": {
+    "http": 429,
+    "body": { "error": { "code": "RATE_LIMITED", "message": "Too many tries.", "retry_after": 42, "request_id": "req_r08" } }
+  }
+}

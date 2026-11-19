@@ -1,0 +1,12 @@
+{
+  "status": "not_started",
+  "offer": {
+    "title": { "en": "Free appetizer for your table", "zh": "桌上免费开胃菜" },
+    "details": { "en": "One per table · Dine-in", "zh": "每桌限一份 · 仅限堂食" },
+    "kind": "creator",
+    "starts": "2026-11-20",
+    "ends": "2026-12-04"
+  },
+  "restaurant": { "name": "Feng Hotpot", "location_name": "Sunnyvale", "address": "[Restaurant address]" },
+  "recommended_by": "@bayareabites"
+}

@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": "OFFER_UNAVAILABLE",
+    "message": "This offer isn't available.",
+    "request_id": "req_3c9d"
+  }
+}

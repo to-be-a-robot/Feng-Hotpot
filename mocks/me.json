@@ -1,0 +1,7 @@
+{
+  "user_id": "u_1",
+  "email": "manager@example.com",
+  "role": "manager",
+  "locations": ["sunnyvale"],
+  "features": { "demo_tools": false }
+}

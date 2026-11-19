@@ -1,0 +1,50 @@
+{
+  "items": [
+    {
+      "id": "cmp_1",
+      "name": "First cold week · Sunnyvale",
+      "occasion": { "id": "occ_cold_week", "name": "First cold week" },
+      "location": "sunnyvale",
+      "start_date": "2026-11-20",
+      "end_date": "2026-12-04",
+      "status": "active",
+      "creator_count": 5,
+      "outreach_counts": { "draft": 3, "approved": 1, "sent": 1, "replied": 3, "declined": 1, "rejected": 1 },
+      "first_visits": 12,
+      "return_visits": 3,
+      "generation": { "status": "running", "total": 10, "done": 8, "failed": 1 },
+      "is_simulated": true
+    },
+    {
+      "id": "cmp_2",
+      "name": "Finals week · Sunnyvale",
+      "occasion": { "id": "occ_finals_end", "name": "Finals ending" },
+      "location": "sunnyvale",
+      "start_date": "2026-11-20",
+      "end_date": "2026-12-11",
+      "status": "active",
+      "creator_count": 1,
+      "outreach_counts": { "draft": 2, "approved": 0, "sent": 0, "replied": 0, "declined": 0, "rejected": 0 },
+      "first_visits": 0,
+      "return_visits": 0,
+      "generation": { "status": "partial", "total": 2, "done": 1, "failed": 1 },
+      "is_simulated": false
+    },
+    {
+      "id": "cmp_0",
+      "name": "Back to school · Sunnyvale",
+      "occasion": { "id": "occ_payday", "name": "Payday" },
+      "location": "sunnyvale",
+      "start_date": "2026-09-01",
+      "end_date": "2026-09-14",
+      "status": "ended",
+      "creator_count": 2,
+      "outreach_counts": { "draft": 0, "approved": 0, "sent": 2, "replied": 0, "declined": 0, "rejected": 0 },
+      "first_visits": 0,
+      "return_visits": 0,
+      "generation": { "status": "done", "total": 4, "done": 4, "failed": 0 },
+      "is_simulated": false
+    }
+  ],
+  "next_cursor": null
+}

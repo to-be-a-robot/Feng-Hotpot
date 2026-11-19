@@ -1,0 +1,38 @@
+{
+  "location": "sunnyvale",
+  "items": [
+    {
+      "id": "r_3",
+      "code": "FENG-COLD-K7M2QD",
+      "type": "first",
+      "party_size": 2,
+      "redeemed_at": "2026-11-28T02:42:00Z",
+      "voided_at": null,
+      "voided_reason": null,
+      "can_void_until": "2026-11-28T02:57:00Z",
+      "has_return_offer": true
+    },
+    {
+      "id": "r_2",
+      "code": "BACK-3NQ8-WD5R",
+      "type": "return",
+      "party_size": 4,
+      "redeemed_at": "2026-11-28T02:20:00Z",
+      "voided_at": null,
+      "voided_reason": null,
+      "can_void_until": "2026-11-28T02:35:00Z",
+      "has_return_offer": false
+    },
+    {
+      "id": "r_1",
+      "code": "FENG-COLD-9QXA4R",
+      "type": "first",
+      "party_size": 3,
+      "redeemed_at": "2026-11-28T02:05:00Z",
+      "voided_at": "2026-11-28T02:10:00Z",
+      "voided_reason": "Wrong party size",
+      "can_void_until": "2026-11-28T02:20:00Z",
+      "has_return_offer": false
+    }
+  ]
+}
