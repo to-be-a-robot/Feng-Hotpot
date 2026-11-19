@@ -192,3 +192,37 @@ def test_dev_access_key(db_url, monkeypatch):
         assert c.get("/health").status_code == 200                       # public endpoints stay open
         err(c.get("/public/offers/FENG-NOPE-000000"), "OFFER_UNAVAILABLE", 404)
     app.state.pool.close()
+
+
+def test_supabase_auth_mode(db_url, monkeypatch, conn):
+    """Bearer token -> Supabase /auth/v1/user -> profiles row decides role and locations."""
+    from feng_workers import api as api_mod
+    from feng_workers.users import upsert_profile
+
+    user_id = str(uuid.uuid4())
+    upsert_profile(conn, user_id, "staff", ["sunnyvale"], "Front desk")
+
+    class Resp:
+        def __init__(self, status, data):
+            self.status_code, self._data = status, data
+
+        def json(self):
+            return self._data
+
+    def fake_get(url, headers, timeout):
+        assert url.endswith("/auth/v1/user")
+        token = headers["Authorization"].split()[1]
+        return Resp(200, {"id": user_id, "email": "staff@feng.example"}) if token == "good" else Resp(401, {})
+
+    monkeypatch.setattr(api_mod.httpx, "get", fake_get)
+    monkeypatch.setenv("SUPABASE_URL", "https://example.supabase.co")
+    monkeypatch.setenv("SUPABASE_ANON_KEY", "anon")
+    app = create_app(database_url=db_url, auth_mode="supabase")
+    with TestClient(app) as c:
+        err(c.get("/me"), "UNAUTHENTICATED", 401)
+        err(c.get("/me", headers={"Authorization": "Bearer bad"}), "UNAUTHENTICATED", 401)
+        me = c.get("/me", headers={"Authorization": "Bearer good"}).json()
+        assert me["role"] == "staff" and me["locations"] == ["sunnyvale"]
+        err(c.get("/creators", headers={"Authorization": "Bearer good"}), "FORBIDDEN", 403)   # staff only redeem
+        err(c.get("/me", headers={"X-Dev-Role": "admin"}), "UNAUTHENTICATED", 401)            # dev headers ignored
+    app.state.pool.close()
