@@ -216,6 +216,10 @@ class SimulateIn(BaseModel):
     days: int = Field(default=14, ge=1, le=60)
 
 
+class DemoResetIn(BaseModel):
+    confirm: str
+
+
 class BriefGenerateIn(BaseModel):
     location: str
     as_of: date | None = None
@@ -502,6 +506,14 @@ def create_app(database_url: str | None = None, auth_mode: str | None = None) ->
         background.add_task(run_brief, loc, date.fromisoformat(result["as_of"]), user.id)
         return {"campaign_id": result["campaign_id"], "days": result["days"], "added": result["added"],
                 "brief": {"status": "generating"}}
+
+    @app.post("/demo/reset")
+    def demo_reset(body: DemoResetIn, user: User = Depends(auth)):
+        demo_only(user)
+        if body.confirm != "RESET":
+            raise ApiError("VALIDATION_FAILED", 422, "Check the highlighted fields.",
+                           fields={"confirm": 'Send "RESET" to confirm'})
+        return q("select demo_reset(%s)", user.id)
 
     return app
 

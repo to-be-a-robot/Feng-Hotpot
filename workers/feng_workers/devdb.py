@@ -16,8 +16,6 @@ from pathlib import Path
 
 import psycopg
 
-from .config import REPO_ROOT
-
 DATA_DIR = Path.home() / ".feng-hotpot-devdb"
 
 
@@ -27,14 +25,14 @@ def server(cleanup_mode=None):
 
 
 def migrate(url: str) -> list[str]:
-    applied = []
+    from .migrate import apply
     with psycopg.connect(url, autocommit=True) as conn:
-        if conn.execute("select to_regclass('public.creators')").fetchone()[0]:
-            return applied      # already set up; use --reset to start over
-        for m in sorted((REPO_ROOT / "supabase" / "migrations").glob("*.sql")):
-            conn.execute(m.read_text(encoding="utf-8"))
-            applied.append(m.name)
-    return applied
+        has_tables = conn.execute("select to_regclass('public.creators')").fetchone()[0]
+        has_log = conn.execute("select to_regclass('public.schema_migrations')").fetchone()[0]
+    # Dev databases made before migrate.py existed had exactly the first four files.
+    if has_tables and not has_log:
+        return apply(url, baseline_through="20261118000004_api_functions.sql")
+    return apply(url)
 
 
 def main(argv=None):

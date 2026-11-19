@@ -12,9 +12,8 @@ def db_url(tmp_path_factory):
     pgserver = pytest.importorskip("pgserver")
     srv = pgserver.get_server(tmp_path_factory.mktemp("pg"), cleanup_mode="stop")
     url = srv.get_uri()
-    with psycopg.connect(url, autocommit=True) as conn:
-        for m in sorted((REPO_ROOT / "supabase" / "migrations").glob("*.sql")):
-            conn.execute(m.read_text())
+    from feng_workers.migrate import apply
+    apply(url)
     yield url
     srv.cleanup()
 

@@ -161,3 +161,22 @@ def test_errors_and_ids(client):
     assert "occasion_id" in e["fields"]
     err(client.get("/creators", params={"cursor": "abc"}), "VALIDATION_FAILED", 422)
     assert client.get("/health").json() == {"ok": True}
+
+
+def test_demo_reset(client):
+    admin = {"X-Dev-Role": "admin"}
+    err(client.post("/demo/reset", json={"confirm": "RESET"}), "FORBIDDEN", 403)          # managers can't
+    err(client.post("/demo/reset", headers=admin, json={"confirm": "yes"}), "VALIDATION_FAILED", 422)
+    r = client.post("/demo/reset", headers=admin, json={"confirm": "RESET"})
+    assert r.status_code == 200 and "campaigns" in r.json()["deleted"]
+    assert client.get("/campaigns", headers=admin).json()["items"] == []
+    assert client.get("/occasions").json()["items"]                                       # reference data kept
+
+
+def test_migrations_are_recorded_once(db_url):
+    from feng_workers.migrate import apply, status
+    import psycopg
+    assert apply(db_url) == []                                                            # nothing pending
+    with psycopg.connect(db_url, autocommit=True) as conn:
+        done, pending = status(conn)
+    assert pending == [] and "20261119000005_demo_reset.sql" in done
