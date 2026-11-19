@@ -14,7 +14,10 @@ post → code redemption → repeat visit, and writes a weekly brief.
 | `workers/feng_workers/` | Python backend: API server, seed loader, embeddings, scoring, draft writer, simulator, weekly brief, evaluation |
 | `config/` | Scoring weights, seed CSV mapping, simulation story, hours-saved minutes |
 | `prompts/` | Claude prompts (editable without code changes) |
-| `docs/FRONTEND_SPEC.md`, `mocks/` | API contract and sample responses (Tyler, `frontend` branch) |
+| `docs/FRONTEND_SPEC.md`, `mocks/` | API contract and sample responses (Tyler) |
+| `docs/BACKEND_GUIDE.md`, `docs/openapi.json` | How the frontend calls the backend |
+| `docs/DEPLOY.md`, `render.yaml`, `Dockerfile` | Putting the API online |
+| `docs/DEMO_SCRIPT.md`, `docs/SUBMISSION_DRAFT.md` | Demo run and written submission draft |
 | `seed/example/` | Fictional sample CSVs until the real seed arrives |
 | `PENDING.md` | Open decisions and where to plug each answer in |
 
@@ -37,14 +40,16 @@ python -m feng_workers.smoke             # walks the whole loop and prints ✓ /
 
 ## Run the backend
 
+Going online (Supabase + Render, about 45 minutes of clicking): see [docs/DEPLOY.md](docs/DEPLOY.md).
+For the frontend side: [docs/BACKEND_GUIDE.md](docs/BACKEND_GUIDE.md).
+
 ```bash
 cp .env.example .env     # set DATABASE_URL; add ANTHROPIC_API_KEY for real AI text
-# Apply supabase/migrations/*.sql in order (Supabase SQL editor, or `supabase db push`).
-
 cd workers
 uv venv && uv pip install -e ".[dev]"     # or: python -m venv .venv && pip install -e ".[dev]"
 source .venv/bin/activate
 
+python -m feng_workers.migrate            # apply new database migrations (tracked; safe to re-run)
 python -m feng_workers.load_seed          # creators, posts, brand corpus (--dry-run to validate only)
 python -m feng_workers.embed              # caption + brand embeddings
 python -m feng_workers.scoring            # 0–100 score, breakdown, one-line reason per creator
@@ -61,7 +66,9 @@ python -m feng_workers.drafts --watch               # draft writer (the API also
 python -m feng_workers.simulate <campaign_id> --days 14   # demo fast-forward (also POST /simulate)
 python -m feng_workers.brief sunnyvale --as-of 2026-12-05 # weekly brief (also POST /briefs/generate)
 python -m feng_workers.evaluate --labels seed/labels.csv  # precision@10 + draft acceptance rate
-pytest                                               # 37 tests on an embedded Postgres; no Docker, no API key
+python -m feng_workers.users add <email> --role manager --locations sunnyvale   # sign-in accounts (AUTH_MODE=supabase)
+./scripts/tunnel.sh                                  # temporary public URL for the local API
+pytest                                               # tests on an embedded Postgres; no Docker, no API key
 ```
 
 ## How it fits together
@@ -79,6 +86,7 @@ pytest                                               # 37 tests on an embedded P
 | `POST /redemptions`, `GET /redemptions/recent`, `GET /redemptions/:id`, `POST /redemptions/:id/void` | `redeem_code`, `recent_redemptions`, `redemption_response`, `void_redemption` |
 | `GET /briefs/latest`, `GET /briefs`, `POST /briefs/generate` | `api_brief_latest`, `api_briefs`, `brief.py` (numbers from `brief_metrics`) |
 | `POST /simulate` | `simulate.py` (through `redeem_code`), then `brief.py` |
+| `POST /demo/reset` | `demo_reset` |
 
 The API layer (`feng_workers/api.py`) adds sign-in, role and location checks, rate limits,
 request ids and the error format. If the team serves the API another way (D6), call the same
