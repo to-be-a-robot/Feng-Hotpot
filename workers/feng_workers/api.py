@@ -40,6 +40,7 @@ from psycopg_pool import ConnectionPool
 from pydantic import BaseModel, Field
 
 from .config import env
+from .db import CONNECT_KWARGS
 
 log = logging.getLogger("feng.api")
 
@@ -236,7 +237,8 @@ def create_app(database_url: str | None = None, auth_mode: str | None = None) ->
     database_url = database_url or env("DATABASE_URL", required=True)
     auth_mode = (auth_mode or env("AUTH_MODE", "dev")).lower()
     demo_mode = (env("DEMO_MODE", "false") or "").lower() in ("1", "true", "yes")
-    pool = ConnectionPool(database_url, min_size=1, max_size=10, kwargs={"autocommit": True}, open=True)
+    pool = ConnectionPool(database_url, min_size=1, max_size=10,
+                          kwargs={"autocommit": True, **CONNECT_KWARGS}, open=True)
     auth = Auth(auth_mode, pool)
     limiter = RateLimiter()
     if auth_mode == "dev":
@@ -292,7 +294,7 @@ def create_app(database_url: str | None = None, auth_mode: str | None = None) ->
             raise ApiError("NOT_FOUND", 404, "We couldn't find that.")
 
     def connect():
-        return psycopg.connect(database_url, autocommit=True)
+        return psycopg.connect(database_url, autocommit=True, **CONNECT_KWARGS)
 
     def run_drafts(campaign_id: str):
         from .drafts import run

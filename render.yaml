@@ -15,7 +15,7 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.7
-      - key: DATABASE_URL            # Supabase session connection string (port 5432)
+      - key: DATABASE_URL            # Supabase → Connect → "Session pooler" URI (not Direct: IPv6-only)
         sync: false
       - key: ANTHROPIC_API_KEY       # leave empty to run with template text
         sync: false

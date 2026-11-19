@@ -20,6 +20,7 @@ import argparse
 import psycopg
 
 from .config import REPO_ROOT
+from .db import CONNECT_KWARGS
 
 MIGRATIONS = REPO_ROOT / "supabase" / "migrations"
 
@@ -41,7 +42,7 @@ def apply(url: str, *, baseline_through: str | None = None) -> list[str]:
     """Apply pending files. With baseline_through, files up to and including
     that name are only recorded (they were applied by hand earlier)."""
     applied = []
-    with psycopg.connect(url, autocommit=True) as conn:
+    with psycopg.connect(url, autocommit=True, **CONNECT_KWARGS) as conn:
         done, pending = status(conn)
         if baseline_through and baseline_through not in {p.name for p in MIGRATIONS.glob("*.sql")}:
             raise SystemExit(f"No migration named {baseline_through}")
@@ -67,7 +68,7 @@ def main(argv=None):
     from .config import env
     url = env("DATABASE_URL", required=True)
     if args.status:
-        with psycopg.connect(url, autocommit=True) as conn:
+        with psycopg.connect(url, autocommit=True, **CONNECT_KWARGS) as conn:
             done, pending = status(conn)
         print("Applied:", *done or ["(none)"], sep="\n  ")
         print("Pending:", *pending or ["(none)"], sep="\n  ")
